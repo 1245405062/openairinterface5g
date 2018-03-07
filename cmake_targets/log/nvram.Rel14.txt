@@ -1,0 +1,2 @@
+Linking C executable nvram
+[100%] Built target nvram

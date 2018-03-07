@@ -1,31 +1,23 @@
-/*******************************************************************************
-    OpenAirInterface
-    Copyright(c) 1999 - 2014 Eurecom
-
-    OpenAirInterface is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-
-    OpenAirInterface is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is
-   included in this distribution in the file called "COPYING". If not,
-   see <http://www.gnu.org/licenses/>.
-
-  Contact Information
-  OpenAirInterface Admin: openair_admin@eurecom.fr
-  OpenAirInterface Tech : openair_tech@eurecom.fr
-  OpenAirInterface Dev  : openair4g-devel@lists.eurecom.fr
-
-  Address      : Eurecom, Compus SophiaTech 450, route des chappes, 06451 Biot, France.
-
- *******************************************************************************/
+/*
+ * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The OpenAirInterface Software Alliance licenses this file to You under
+ * the OAI Public License, Version 1.0  (the "License"); you may not use this file
+ * except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.openairinterface.org/?page_id=698
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *-------------------------------------------------------------------------------
+ * For more information about the OpenAirInterface (OAI) Software Alliance:
+ *      contact@openairinterface.org
+ */
 
 /*! \file s1ap_eNB_decoder.c
  * \brief s1ap pdu decode procedures for eNB
@@ -182,6 +174,21 @@ static int s1ap_eNB_decode_successful_outcome(s1ap_message *message,
     message_id = S1AP_S1_SETUP_LOG;
     break;
 
+  case S1ap_ProcedureCode_id_HandoverResourceAllocation:
+  	ret = s1ap_decode_s1ap_handoverrequesties(
+		    &message->msg.s1ap_HandoverRequestIEs, &successfullOutcome_p->value);
+	s1ap_xer_print_s1ap_handoverrequest(s1ap_xer__print2sp, message_string, message);
+	message_id=S1AP_HANDOVER_REQUEST;
+	printf("magicwo_received_handover_request\n");
+	fflush(stdout);
+  	break;
+  case S1ap_ProcedureCode_id_HandoverPreparation:
+  	ret = s1ap_decode_s1ap_handovercommandies(
+		 &message->msg.s1ap_HandoverCommandIEs, &successfullOutcome_p->value);
+	s1ap_xer_print_s1ap_handovercommand(s1ap_xer__print2sp, message_string, message);
+	printf("magicwo_received_handover_command\n");
+	fflush(stdout);
+	break;
   default:
     S1AP_ERROR("Unknown procedure ID (%d) for successfull outcome message\n",
                (int)successfullOutcome_p->procedureCode);

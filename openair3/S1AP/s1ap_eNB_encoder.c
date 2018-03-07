@@ -1,31 +1,23 @@
-/*******************************************************************************
-    OpenAirInterface
-    Copyright(c) 1999 - 2014 Eurecom
-
-    OpenAirInterface is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-
-    OpenAirInterface is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is
-   included in this distribution in the file called "COPYING". If not,
-   see <http://www.gnu.org/licenses/>.
-
-  Contact Information
-  OpenAirInterface Admin: openair_admin@eurecom.fr
-  OpenAirInterface Tech : openair_tech@eurecom.fr
-  OpenAirInterface Dev  : openair4g-devel@lists.eurecom.fr
-
-  Address      : Eurecom, Compus SophiaTech 450, route des chappes, 06451 Biot, France.
-
- *******************************************************************************/
+/*
+ * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The OpenAirInterface Software Alliance licenses this file to You under
+ * the OAI Public License, Version 1.0  (the "License"); you may not use this file
+ * except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.openairinterface.org/?page_id=698
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *-------------------------------------------------------------------------------
+ * For more information about the OpenAirInterface (OAI) Software Alliance:
+ *      contact@openairinterface.org
+ */
 
 /*! \file s1ap_eNB_encoder.c
  * \brief s1ap pdu encode procedures for eNB
@@ -150,6 +142,14 @@ int s1ap_eNB_encode_initiating(s1ap_message *s1ap_message_p,
   s1ap_string_total_size = 0;
 
   switch(s1ap_message_p->procedureCode) {
+  case S1ap_ProcedureCode_id_HandoverPreparation:
+    ret = s1ap_eNB_encode_enb_send_handover_require(
+            &s1ap_message_p->msg.s1ap_UEContextReleaseRequestIEs, buffer, len);
+    s1ap_xer_print_s1ap_uecontextreleaserequest(s1ap_xer__print2sp,
+        message_string, s1ap_message_p);
+    message_id = S1AP_UE_CONTEXT_RELEASE_REQ_LOG;
+    break;
+
   case S1ap_ProcedureCode_id_S1Setup:
     ret = s1ap_eNB_encode_s1_setup_request(
             &s1ap_message_p->msg.s1ap_S1SetupRequestIEs, buffer, len);
@@ -196,6 +196,7 @@ int s1ap_eNB_encode_initiating(s1ap_message *s1ap_message_p,
 
 
   default:
+    printf("do here error\n");
     S1AP_DEBUG("Unknown procedure ID (%d) for initiating message\n",
                (int)s1ap_message_p->procedureCode);
     return ret;
@@ -272,6 +273,17 @@ int s1ap_eNB_encode_successfull_outcome(s1ap_message *s1ap_message_p,
     free(message_string);
     S1AP_INFO("E_RABSetup successful message\n");
     break;
+
+  case S1ap_ProcedureCode_id_HandoverResourceAllocation:
+  	 printf("Ready_HandoverRequestAck successful message\n");
+	 fflush(stdout);
+     ret=s1ap_eNB_encode_enb_send_handover_request_ack(
+	 	&s1ap_message_p->msg.s1ap_HandoverRequestAcknowledgeIEs,buffer,len);
+     s1ap_xer_print_s1ap_handoverrequestacknowledge(s1ap_xer__print2sp, message_string, s1ap_message_p);
+	 free(message_string);
+	 printf("HandoverRequestAck successful message\n");
+	 fflush(stdout);
+	break;
   default:
     S1AP_WARN("Unknown procedure ID (%d) for successfull outcome message\n",
                (int)s1ap_message_p->procedureCode);
@@ -571,3 +583,60 @@ int s1ap_eNB_encode_e_rab_setup_response(S1ap_E_RABSetupResponseIEs_t  *s1ap_E_R
          &asn_DEF_S1ap_E_RABSetupResponse,
          e_rab_setup_response_p);
 }
+//新添加
+int s1ap_eNB_encode_enb_send_handover_require(S1ap_HandoverRequiredIEs_t  *s1ap_HandoverRequiredIEs,
+					 uint8_t                              **buffer,
+					 uint32_t                              *length)
+{
+  S1ap_HandoverRequired_t  handover_require;
+  S1ap_HandoverRequired_t  *handover_require_p = &handover_require;
+
+  memset((void *)handover_require_p, 0,
+         sizeof(handover_require));
+
+  if (s1ap_encode_s1ap_handoverrequiredies(handover_require_p, s1ap_HandoverRequiredIEs) < 0) {
+      printf("s1ap_eNB_encode_enb_send_handover_require failed\n");
+      return -1;
+  }
+  printf("s1ap_eNB_encode_enb_send_handover_require success\n");
+
+  return s1ap_generate_successfull_outcome(buffer,
+         length,
+         S1ap_ProcedureCode_id_HandoverPreparation,
+         S1ap_Criticality_reject,
+         &asn_DEF_S1ap_HandoverRequired,
+         handover_require_p);
+}
+
+int s1ap_eNB_encode_enb_send_handover_request_ack(S1ap_HandoverRequestAcknowledgeIEs_t *s1ap_HandoverRequestAckIEs,
+					 uint8_t                              **buffer,
+					 uint32_t                              *length)
+{
+  S1ap_HandoverRequestAcknowledge_t handover_request_ack;
+  S1ap_HandoverRequestAcknowledge_t  *handover_request_ack_p = &handover_request_ack;
+
+  printf("encode_enb_send_handover_request_ack\n");
+  fflush(stdout);
+  memset((void *)handover_request_ack_p, 0,
+         sizeof(handover_request_ack));
+  printf("encode_enb_send_handover_request_ack1\n");
+  fflush(stdout);
+
+  if (s1ap_encode_s1ap_handoverrequestacknowledgeies(handover_request_ack_p, s1ap_HandoverRequestAckIEs) < 0) {
+      printf("s1ap_eNB_encode_enb_send_handover_request_ack failed\n");
+      return -1;
+  }
+  printf("s1ap_eNB_encode_enb_send_handover_request_ack success\n");
+  fflush(stdout);
+  return s1ap_generate_successfull_outcome(buffer,
+         length,
+         S1ap_ProcedureCode_id_HandoverResourceAllocation,
+         S1ap_Criticality_reject,
+         &asn_DEF_S1ap_HandoverRequestAcknowledge,
+         handover_request_ack_p);
+}
+
+
+
+
+

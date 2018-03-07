@@ -1,0 +1,102 @@
+/usr/bin/cmake -H/home/liu/openairinterface5g/cmake_targets/at_commands -B/home/liu/openairinterface5g/cmake_targets/at_commands/build --check-build-system CMakeFiles/Makefile.cmake 0
+make -f CMakeFiles/Makefile2 at_nas_ue
+make[1]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+/usr/bin/cmake -H/home/liu/openairinterface5g/cmake_targets/at_commands -B/home/liu/openairinterface5g/cmake_targets/at_commands/build --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles 100
+make -f CMakeFiles/Makefile2 CMakeFiles/at_nas_ue.dir/all
+make[2]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make -f CMakeFiles/ies.dir/build.make CMakeFiles/ies.dir/depend
+make -f CMakeFiles/emm.dir/build.make CMakeFiles/emm.dir/depend
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+cd /home/liu/openairinterface5g/cmake_targets/at_commands/build && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles/ies.dir/DependInfo.cmake --color=
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make -f CMakeFiles/ies.dir/build.make CMakeFiles/ies.dir/build
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make[3]: Nothing to be done for `CMakeFiles/ies.dir/build'.
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+/usr/bin/cmake -E cmake_progress_report /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles  57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91
+[ 35%] Built target ies
+make -f CMakeFiles/util.dir/build.make CMakeFiles/util.dir/depend
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+cd /home/liu/openairinterface5g/cmake_targets/at_commands/build && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles/emm.dir/DependInfo.cmake --color=
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+cd /home/liu/openairinterface5g/cmake_targets/at_commands/build && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles/util.dir/DependInfo.cmake --color=
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make -f CMakeFiles/util.dir/build.make CMakeFiles/util.dir/build
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make[3]: Nothing to be done for `CMakeFiles/util.dir/build'.
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+/usr/bin/cmake -E cmake_progress_report /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles  96 97 98 99 100
+[ 40%] Built target util
+make -f CMakeFiles/api_network.dir/build.make CMakeFiles/api_network.dir/depend
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make -f CMakeFiles/emm.dir/build.make CMakeFiles/emm.dir/build
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+cd /home/liu/openairinterface5g/cmake_targets/at_commands/build && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles/api_network.dir/DependInfo.cmake --color=
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make[3]: Nothing to be done for `CMakeFiles/emm.dir/build'.
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+/usr/bin/cmake -E cmake_progress_report /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles  8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39
+[ 72%] Built target emm
+make -f CMakeFiles/secu_cn.dir/build.make CMakeFiles/secu_cn.dir/depend
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+cd /home/liu/openairinterface5g/cmake_targets/at_commands/build && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles/secu_cn.dir/DependInfo.cmake --color=
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make -f CMakeFiles/api_network.dir/build.make CMakeFiles/api_network.dir/build
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make[3]: Nothing to be done for `CMakeFiles/api_network.dir/build'.
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+/usr/bin/cmake -E cmake_progress_report /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles  1
+[ 73%] Built target api_network
+make -f CMakeFiles/api_usim.dir/build.make CMakeFiles/api_usim.dir/depend
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make -f CMakeFiles/secu_cn.dir/build.make CMakeFiles/secu_cn.dir/build
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make[3]: Nothing to be done for `CMakeFiles/secu_cn.dir/build'.
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+/usr/bin/cmake -E cmake_progress_report /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles  92 93 94 95
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+cd /home/liu/openairinterface5g/cmake_targets/at_commands/build && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles/api_usim.dir/DependInfo.cmake --color=
+[ 77%] Built target secu_cn
+make -f CMakeFiles/api_user.dir/build.make CMakeFiles/api_user.dir/depend
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+cd /home/liu/openairinterface5g/cmake_targets/at_commands/build && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles/api_user.dir/DependInfo.cmake --color=
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make -f CMakeFiles/api_usim.dir/build.make CMakeFiles/api_usim.dir/build
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make[3]: Nothing to be done for `CMakeFiles/api_usim.dir/build'.
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+/usr/bin/cmake -E cmake_progress_report /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles  4
+[ 78%] Built target api_usim
+make -f CMakeFiles/esm.dir/build.make CMakeFiles/esm.dir/depend
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make -f CMakeFiles/api_user.dir/build.make CMakeFiles/api_user.dir/build
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make[3]: Nothing to be done for `CMakeFiles/api_user.dir/build'.
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+/usr/bin/cmake -E cmake_progress_report /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles  2 3
+[ 80%] Built target api_user
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+cd /home/liu/openairinterface5g/cmake_targets/at_commands/build && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles/esm.dir/DependInfo.cmake --color=
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make -f CMakeFiles/esm.dir/build.make CMakeFiles/esm.dir/build
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make[3]: Nothing to be done for `CMakeFiles/esm.dir/build'.
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+/usr/bin/cmake -E cmake_progress_report /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles  40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56
+[ 97%] Built target esm
+make -f CMakeFiles/at_nas_ue.dir/build.make CMakeFiles/at_nas_ue.dir/depend
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+cd /home/liu/openairinterface5g/cmake_targets/at_commands/build && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles/at_nas_ue.dir/DependInfo.cmake --color=
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+make -f CMakeFiles/at_nas_ue.dir/build.make CMakeFiles/at_nas_ue.dir/build
+make[3]: Entering directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+Linking C executable at_nas_ue
+/usr/bin/cmake -E cmake_link_script CMakeFiles/at_nas_ue.dir/link.txt --verbose=1
+/usr/bin/cc   -msse4.2 -std=gnu99 -Wall -Wstrict-prototypes -fno-strict-aliasing -rdynamic -funroll-loops -Wno-packed-bitfield-compat -DCMAKER -O2 -g -DNDEBUG -ggdb -DMALLOC_CHECK_=3 -O2    CMakeFiles/at_nas_ue.dir/home/liu/openairinterface5g/openair3/NAS/UE/UEprocess.c.o CMakeFiles/at_nas_ue.dir/home/liu/openairinterface5g/openair3/NAS/UE/nas_network.c.o CMakeFiles/at_nas_ue.dir/home/liu/openairinterface5g/openair3/NAS/UE/nas_parser.c.o CMakeFiles/at_nas_ue.dir/home/liu/openairinterface5g/openair3/NAS/UE/nas_proc.c.o CMakeFiles/at_nas_ue.dir/home/liu/openairinterface5g/openair3/NAS/UE/nas_user.c.o CMakeFiles/at_nas_ue.dir/home/liu/openairinterface5g/common/utils/utils.c.o CMakeFiles/at_nas_ue.dir/home/liu/openairinterface5g/common/utils/system.c.o  -o at_nas_ue -rdynamic -Wl,-whole-archive libapi_network.a libapi_user.a libapi_usim.a libemm.a libesm.a libies.a libutil.a libsecu_cn.a -Wl,-no-whole-archive -lnettle -lssl -lcrypto -lpthread -lm 
+make[3]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+/usr/bin/cmake -E cmake_progress_report /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles  5 6 7
+[100%] Built target at_nas_ue
+make[2]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'
+/usr/bin/cmake -E cmake_progress_start /home/liu/openairinterface5g/cmake_targets/at_commands/build/CMakeFiles 0
+make[1]: Leaving directory `/home/liu/openairinterface5g/cmake_targets/at_commands/build'

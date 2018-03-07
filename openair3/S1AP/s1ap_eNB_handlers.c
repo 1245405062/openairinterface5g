@@ -1,31 +1,23 @@
-/*******************************************************************************
-    OpenAirInterface
-    Copyright(c) 1999 - 2014 Eurecom
-
-    OpenAirInterface is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-
-    OpenAirInterface is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with OpenAirInterface.The full GNU General Public License is
-   included in this distribution in the file called "COPYING". If not,
-   see <http://www.gnu.org/licenses/>.
-
-  Contact Information
-  OpenAirInterface Admin: openair_admin@eurecom.fr
-  OpenAirInterface Tech : openair_tech@eurecom.fr
-  OpenAirInterface Dev  : openair4g-devel@lists.eurecom.fr
-
-  Address      : Eurecom, Compus SophiaTech 450, route des chappes, 06451 Biot, France.
-
- *******************************************************************************/
+/*
+ * Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The OpenAirInterface Software Alliance licenses this file to You under
+ * the OAI Public License, Version 1.0  (the "License"); you may not use this file
+ * except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.openairinterface.org/?page_id=698
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *-------------------------------------------------------------------------------
+ * For more information about the OpenAirInterface (OAI) Software Alliance:
+ *      contact@openairinterface.org
+ */
 
 /*! \file s1ap_eNB_handlers.c
  * \brief s1ap messages handlers for eNB part
@@ -89,11 +81,23 @@ int s1ap_eNB_handle_e_rab_setup_request(uint32_t               assoc_id,
 					uint32_t               stream,
 					struct s1ap_message_s *s1ap_message_p);
 
+static
+int s1ap_eNB_handle_handover_request(uint32_t               assoc_id,
+					uint32_t               stream,
+					struct s1ap_message_s *s1ap_message_p);
+
+static
+int s1ap_eNB_handle_handover_command(uint32_t               assoc_id,
+					uint32_t               stream,
+					struct s1ap_message_s *s1ap_message_p);
+
+
+
 
 /* Handlers matrix. Only eNB related procedure present here */
 s1ap_message_decoded_callback messages_callback[][3] = {
-  { 0, 0, 0 }, /* HandoverPreparation */
-  { 0, 0, 0 }, /* HandoverResourceAllocation */
+  { 0, s1ap_eNB_handle_handover_command, 0 }, /* HandoverPreparation */
+  { 0, s1ap_eNB_handle_handover_request, 0 }, /* HandoverResourceAllocation */
   { 0, 0, 0 }, /* HandoverNotification */
   { 0, 0, 0 }, /* PathSwitchRequest */
   { 0, 0, 0 }, /* HandoverCancel */
@@ -213,7 +217,7 @@ int s1ap_eNB_handle_message(uint32_t assoc_id, int32_t stream,
   if (message.procedureCode > sizeof(messages_callback) / (3 * sizeof(
         s1ap_message_decoded_callback))
       || (message.direction > S1AP_PDU_PR_unsuccessfulOutcome)) {
-    S1AP_ERROR("[SCTP %d] Either procedureCode %d or direction %d exceed expected\n",
+    S1AP_ERROR("[SCTP %d] Either procedureCode %ld or direction %d exceed expected\n",
                assoc_id, message.procedureCode, message.direction);
     return -1;
   }
@@ -222,7 +226,7 @@ int s1ap_eNB_handle_message(uint32_t assoc_id, int32_t stream,
    * This can mean not implemented or no procedure for eNB (wrong direction).
    */
   if (messages_callback[message.procedureCode][message.direction-1] == NULL) {
-    S1AP_ERROR("[SCTP %d] No handler for procedureCode %d in %s\n",
+    S1AP_ERROR("[SCTP %d] No handler for procedureCode %ld in %s\n",
                assoc_id, message.procedureCode,
                s1ap_direction2String[message.direction]);
     return -1;
@@ -460,10 +464,10 @@ int s1ap_eNB_handle_error_indication(uint32_t               assoc_id,
     return -1;
   }
   if ( s1_error_indication_p->presenceMask & S1AP_ERRORINDICATIONIES_MME_UE_S1AP_ID_PRESENT) {
-	  	S1AP_WARN("Received S1 Error indication MME UE S1AP ID 0x%x\n", s1_error_indication_p->mme_ue_s1ap_id);
+	  	S1AP_WARN("Received S1 Error indication MME UE S1AP ID 0x%lx\n", s1_error_indication_p->mme_ue_s1ap_id);
   }
   if ( s1_error_indication_p->presenceMask & S1AP_ERRORINDICATIONIES_ENB_UE_S1AP_ID_PRESENT) {
-  	S1AP_WARN("Received S1 Error indication eNB UE S1AP ID 0x%x\n", s1_error_indication_p->eNB_UE_S1AP_ID);
+  	S1AP_WARN("Received S1 Error indication eNB UE S1AP ID 0x%lx\n", s1_error_indication_p->eNB_UE_S1AP_ID);
   }
 
   if ( s1_error_indication_p->presenceMask & S1AP_ERRORINDICATIONIES_CAUSE_PRESENT) {
@@ -718,7 +722,7 @@ int s1ap_eNB_handle_initial_context_request(uint32_t               assoc_id,
   if ((ue_desc_p = s1ap_eNB_get_ue_context(mme_desc_p->s1ap_eNB_instance,
                    initialContextSetupRequest_p->eNB_UE_S1AP_ID)) == NULL) {
     S1AP_ERROR("[SCTP %d] Received initial context setup request for non "
-               "existing UE context 0x%06x\n", assoc_id,
+               "existing UE context 0x%06lx\n", assoc_id,
                initialContextSetupRequest_p->eNB_UE_S1AP_ID);
     return -1;
   }
@@ -843,7 +847,7 @@ int s1ap_eNB_handle_ue_context_release_command(uint32_t               assoc_id,
     if ((ue_desc_p = s1ap_eNB_get_ue_context(mme_desc_p->s1ap_eNB_instance,
                      enb_ue_s1ap_id)) == NULL) {
       S1AP_ERROR("[SCTP %d] Received UE context release command for non "
-                 "existing UE context 0x%06x\n",
+                 "existing UE context 0x%06lx\n",
                  assoc_id,
                  enb_ue_s1ap_id);
       /*MessageDef *msg_complete_p;
@@ -908,7 +912,7 @@ int s1ap_eNB_handle_e_rab_setup_request(uint32_t               assoc_id,
   if ((ue_desc_p = s1ap_eNB_get_ue_context(mme_desc_p->s1ap_eNB_instance,
                    s1ap_E_RABSetupRequest->eNB_UE_S1AP_ID)) == NULL) {
     S1AP_ERROR("[SCTP %d] Received initial context setup request for non "
-               "existing UE context 0x%06x\n", assoc_id,
+               "existing UE context 0x%06lx\n", assoc_id,
                s1ap_E_RABSetupRequest->eNB_UE_S1AP_ID);
     return -1;
   }
@@ -923,7 +927,7 @@ int s1ap_eNB_handle_e_rab_setup_request(uint32_t               assoc_id,
   ue_desc_p->rx_stream = stream;
 
   if ( ue_desc_p->mme_ue_s1ap_id != s1ap_E_RABSetupRequest->mme_ue_s1ap_id){
-    S1AP_WARN("UE context mme_ue_s1ap_id is different form that of the message (%d != %d)", 
+    S1AP_WARN("UE context mme_ue_s1ap_id is different form that of the message (%d != %ld)", 
 	      ue_desc_p->mme_ue_s1ap_id, s1ap_E_RABSetupRequest->mme_ue_s1ap_id);
 
   }
@@ -991,4 +995,64 @@ int s1ap_eNB_handle_e_rab_setup_request(uint32_t               assoc_id,
   return 0;
 }
 
+static
+int s1ap_eNB_handle_handover_request(uint32_t               assoc_id,
+					uint32_t               stream,
+					struct s1ap_message_s *s1ap_message_p) {
+
+
+ s1ap_eNB_mme_data_t   *mme_desc_p		 = NULL;
+ s1ap_eNB_ue_context_t *ue_desc_p		 = NULL;
+ MessageDef 		   *message_p		 = NULL;
+
+ S1ap_HandoverRequestIEs_t		 *s1ap_Handover_Request_p;
+ s1ap_handover_req_t   *s1ap_handover_req_p = NULL;
+ DevAssert(s1ap_message_p != NULL);
+ printf("magicwo_now_have_handover_request\n");
+ fflush(stdout);
+ s1ap_Handover_Request_p = &s1ap_message_p->msg.s1ap_HandoverRequestIEs;
+
+   if ((mme_desc_p = s1ap_eNB_get_MME(NULL, assoc_id, 0)) == NULL) {
+   S1AP_ERROR("[SCTP %d] Received UE handover request for non "
+			  "existing MME context\n", assoc_id);
+   return -1;
+   }
+   s1ap_handover_req_p = CALLOC(1,sizeof(s1ap_handover_req_t));
+   memcpy(s1ap_handover_req_p,s1ap_Handover_Request_p->source_ToTarget_TransparentContainer.buf,sizeof(s1ap_handover_req_t));
+   printf("s1ap e_rab_id in handover request is %x\n",s1ap_handover_req_p->e_rab_param[0].e_rab_id);
+   
+   printf("mme_ue_s1ap_id is %ld\n", s1ap_handover_req_p->mme_ue_s1ap_id);
+   printf("hello xkn\n");  
+   fflush(stdout);
+   s1ap_send_handover_request_ack(mme_desc_p->assoc_id,mme_desc_p->nextstream);
+   return 0;
+
+
+}
+
+//´¦ÀíhandoverCommand
+int s1ap_eNB_handle_handover_command(uint32_t               assoc_id,
+				uint32_t               stream,
+				struct s1ap_message_s *s1ap_message_p){
+    s1ap_eNB_mme_data_t   *mme_desc_p       = NULL;
+    s1ap_eNB_ue_context_t *ue_desc_p        = NULL;
+    MessageDef            *message_p        = NULL;    
+	
+    S1ap_HandoverCommandIEs_t *handoverCommand_p;
+    
+    DevAssert(s1ap_message_p != NULL);
+    handoverCommand_p = &s1ap_message_p->msg.s1ap_HandoverCommandIEs;
+    if ((mme_desc_p = s1ap_eNB_get_MME(NULL, assoc_id, 0)) == NULL) {
+    S1AP_ERROR("[SCTP %d] Received handover command for non "
+               "existing MME context\n", assoc_id);
+    return -1;
+    }    
+    printf("command_mme_ue_s1ap_id is %ld\n", handoverCommand_p->mme_ue_s1ap_id);
+	printf("command_eNB_UE_S1AP_ID is %ld\n", handoverCommand_p->eNB_UE_S1AP_ID);
+    
+    s1ap_send_rrc_connection_reconfiguration(mme_desc_p->assoc_id,mme_desc_p->nextstream);
+    printf("hello world2\n");  
+
+    return 0;
+}
 
