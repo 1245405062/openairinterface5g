@@ -1030,10 +1030,11 @@ int s1ap_eNB_handle_handover_request(uint32_t               assoc_id,
 
 }
 
-//´¦ÀíhandoverCommand
+//ï¿½ï¿½ï¿½ï¿½handoverCommand
 int s1ap_eNB_handle_handover_command(uint32_t               assoc_id,
 				uint32_t               stream,
 				struct s1ap_message_s *s1ap_message_p){
+	/* magicwo
     s1ap_eNB_mme_data_t   *mme_desc_p       = NULL;
     s1ap_eNB_ue_context_t *ue_desc_p        = NULL;
     MessageDef            *message_p        = NULL;    
@@ -1052,7 +1053,9 @@ int s1ap_eNB_handle_handover_command(uint32_t               assoc_id,
     
     s1ap_send_rrc_connection_reconfiguration(mme_desc_p->assoc_id,mme_desc_p->nextstream);
     printf("hello world2\n");  
-
+	*/
+	
+	//TomDings
     return 0;
 }
 
