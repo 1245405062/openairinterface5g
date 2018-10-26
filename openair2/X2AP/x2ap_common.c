@@ -30,7 +30,7 @@
 
 #include "x2ap_common.h"
 #include "X2AP-PDU.h"
-
+ //TomDing modify
 int asn_debug = 0;
 int asn1_xer_print = 0;
 

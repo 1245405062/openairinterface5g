@@ -136,6 +136,9 @@ rrc_eNB_allocate_new_UE_context(
 
   memset(new_p, 0, sizeof(struct rrc_eNB_ue_context_s));
   new_p->local_uid = uid_linear_allocator_new(rrc_instance_pP);
+  //查看local_uid的生成规则是否固定
+  printf("TomDing new_p->local_uid:%d\n", new_p->local_uid);
+  fflush(stdout);
   return new_p;
 }
 

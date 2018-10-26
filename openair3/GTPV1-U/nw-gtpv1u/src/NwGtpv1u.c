@@ -929,6 +929,8 @@ nwGtpv1uProcessUlpReq( NW_IN NwGtpv1uStackHandleT hGtpuStackHandle,
   switch(pUlpReq->apiType) {
   case NW_GTPV1U_ULP_API_CREATE_TUNNEL_ENDPOINT: {
     GTPU_DEBUG("Received NW_GTPV1U_ULP_API_CREATE_TUNNEL_ENDPOINT from ulp\n");
+	printf("TomDing NW_GTPV1U_ULP_API_CREATE_TUNNEL_ENDPOINT\n");
+	fflush(stdout);
     rc = NwGtpv1uCreateTunnelEndPoint(thiz,
                                       pUlpReq->apiInfo.createTunnelEndPointInfo.teid,
                                       pUlpReq->apiInfo.createTunnelEndPointInfo.hUlpSession,

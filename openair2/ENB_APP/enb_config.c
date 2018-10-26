@@ -729,6 +729,7 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP)
 
   if (  (config_lookup_string( &cfg, ENB_CONFIG_STRING_ASN1_VERBOSITY, (const char **)&astring) )) {
     if (strcasecmp(astring , ENB_CONFIG_STRING_ASN1_VERBOSITY_NONE) == 0) {
+		 //TomDing modify
       asn_debug      = 0;
       asn1_xer_print = 0;
     } else if (strcasecmp(astring , ENB_CONFIG_STRING_ASN1_VERBOSITY_INFO) == 0) {
@@ -738,8 +739,9 @@ const Enb_properties_array_t *enb_config_init(char* lib_config_file_name_pP)
       asn_debug      = 1;
       asn1_xer_print = 2;
     } else {
-      asn_debug      = 0;
-      asn1_xer_print = 0;
+		 //TomDing modify
+      asn_debug      = 1;
+      asn1_xer_print = 2;
     }
   }
 

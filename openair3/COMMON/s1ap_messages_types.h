@@ -32,6 +32,9 @@
 
 //新添
 #define S1AP_HANDOVER_REQUIRE(mSGpTR) (mSGpTR)->ittiMsg.s1ap_handover_req
+#define S1AP_HANDOVER_REQUEST_ACK(mSGpTR) (mSGpTR)->ittiMsg.s1ap_handover_req_ack
+//by coco
+#define S1AP_HANDOVER_NOTIFY(mSGpTR) (mSGpTR)->ittiMsg.s1ap_handover_notify
 
 
 typedef struct s1ap_initial_ue_message_s {

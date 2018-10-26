@@ -191,7 +191,8 @@ uper_encode_internal(asn_TYPE_descriptor_t *td, asn_per_constraints_t *constrain
 	po.outper = cb;
 	po.op_key = app_key;
 	po.flushed_bytes = 0;
-
+	printf("TomDing encode flag 1\n");
+	fflush(stdout);
 	er = td->uper_encoder(td, constraints, sptr, &po);
 	if(er.encoded != -1) {
 		size_t bits_to_flush;
@@ -204,7 +205,8 @@ uper_encode_internal(asn_TYPE_descriptor_t *td, asn_per_constraints_t *constrain
 		if(_uper_encode_flush_outp(&po))
 			_ASN_ENCODE_FAILED;
 	}
-
+	printf("TomDing encode flag 2\n");
+	fflush(stdout);
 	return er;
 }
 

@@ -109,8 +109,8 @@ boolean_t pdcp_data_req(
   if (ctxt_pP->enb_flag != ENB_FLAG_NO)
     T(T_ENB_PDCP_DL, T_INT(ctxt_pP->module_id), T_INT(ctxt_pP->rnti), T_INT(rb_idP), T_INT(sdu_buffer_sizeP));
 #endif
-
   if (sdu_buffer_sizeP == 0) {
+	  printf("TomDing SDU size==0\n");
     LOG_W(PDCP, "Handed SDU is of size 0! Ignoring...\n");
     return FALSE;
   }

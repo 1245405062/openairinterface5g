@@ -76,6 +76,7 @@ typedef UL_DCCH_Message_t       RrcUlDcchMessage;
 #define NAS_CONN_RELEASE_IND(mSGpTR)    (mSGpTR)->ittiMsg.nas_conn_release_ind
 #define NAS_UPLINK_DATA_CNF(mSGpTR)     (mSGpTR)->ittiMsg.nas_ul_data_cnf
 #define NAS_DOWNLINK_DATA_IND(mSGpTR)   (mSGpTR)->ittiMsg.nas_dl_data_ind
+#define HANDOVER_TRIGGER(mSGpTR)        (mSGpTR)->ittiMsg.handover_trigger_t
 
 //-------------------------------------------------------------------------------------------//
 typedef struct RrcStateInd_s {
@@ -174,7 +175,9 @@ typedef struct RrcConfigurationReq_s {
   long                    ue_TimersAndConstants_n311[MAX_NUM_CCs];
   long                    ue_TransmissionMode[MAX_NUM_CCs];
 } RrcConfigurationReq;
-
+typedef struct HandoverTrigger_s{
+  uint8_t flag;
+}HandoverTrigger;
 // UE: NAS -> RRC messages
 typedef kenb_refresh_req_t      NasKenbRefreshReq;
 typedef cell_info_req_t         NasCellSelectionReq;
@@ -191,5 +194,6 @@ typedef nas_establish_cnf_t     NasConnEstabCnf;
 typedef nas_release_ind_t       NasConnReleaseInd;
 typedef ul_info_transfer_cnf_t  NasUlDataCnf;
 typedef dl_info_transfer_ind_t  NasDlDataInd;
+typedef HandoverTrigger         HandoverTrigger_t;
 
 #endif /* RRC_MESSAGES_TYPES_H_ */

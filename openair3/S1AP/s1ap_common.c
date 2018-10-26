@@ -32,8 +32,8 @@
 #include "s1ap_common.h"
 #include "S1AP-PDU.h"
 
-int asn_debug = 0;
-int asn1_xer_print = 0;
+int asn_debug = 1;
+int asn1_xer_print = 2;
 
 #if defined(EMIT_ASN_DEBUG_EXTERN)
 inline void ASN_DEBUG(const char *fmt, ...)
@@ -169,24 +169,20 @@ S1ap_IE_t *s1ap_new_ie(
     // Possible error on malloc
     return NULL;
   }
-
   memset((void *)buff, 0, sizeof(S1ap_IE_t));
 
   buff->id = id;
   buff->criticality = criticality;
-
   if (ANY_fromType_aper(&buff->value, type, sptr) < 0) {
     fprintf(stderr, "Encoding of %s failed\n", type->name);
     free(buff);
     return NULL;
   }
-
   if (asn1_xer_print)
     if (xer_fprint(stdout, &asn_DEF_S1ap_IE, buff) < 0) {
       free(buff);
       return NULL;
     }
-
   return buff;
 }
 

@@ -21,7 +21,11 @@
 
 #ifndef S1AP_MESSAGES_TYPES_H_
 #define S1AP_MESSAGES_TYPES_H_
-
+#include "AS-Config.h"
+#include "AS-Context.h"
+#include "S1ap-Source-ToTarget-TransparentContainer.h"
+#include "CellGlobalIdEUTRA.h"
+#include "TrackingAreaCode.h"
 //-------------------------------------------------------------------------------------------//
 // Defines to access message fields.
 
@@ -58,8 +62,10 @@
 
 //新添加
 #define S1AP_HANDOVER_REQUIRE(mSGpTR)      (mSGpTR)->ittiMsg.s1ap_handover_req
-#define S1AP_HANDOVER_REQUEST(mSGpTR) (mSGpTR)->ittiMsg.s1ap_handover_request
-
+#define S1AP_HANDOVER_REQUEST_ACK(mSGpTR)  (mSGpTR)->ittiMsg.s1ap_handover_req_ack
+#define S1AP_HANDOVER_REQUEST(mSGpTR)      (mSGpTR)->ittiMsg.s1ap_handover_request
+//by coco
+#define S1AP_HANDOVER_NOTIFY(mSGpTR) (mSGpTR)->ittiMsg.s1ap_handover_notify
 
 
 //-------------------------------------------------------------------------------------------//
@@ -115,8 +121,8 @@ typedef enum cn_domain_s {
 #endif
 
 typedef struct net_ip_address_s {
-  unsigned ipv4:1;
-  unsigned ipv6:1;
+  unsigned ipv4: 1;
+  unsigned ipv6: 1;
   char ipv4_address[16];
   char ipv6_address[46];
 } net_ip_address_t;
@@ -223,6 +229,13 @@ typedef struct nas_pdu_s {
   uint32_t  length;
 } nas_pdu_t, ue_radio_cap_t;
 
+typedef struct s1ap_pdu_s {
+  /* Octet string data */
+  uint8_t  *buffer;
+  /* Length of the octet string */
+  uint32_t  length;
+} handover_radio_cap_t;
+
 typedef struct transport_layer_addr_s {
   /* Length of the transport layer address buffer in bits. S1AP layer received a
    * bit string<1..160> containing one of the following addresses: ipv4,
@@ -310,10 +323,10 @@ typedef struct s1ap_register_enb_req_s {
 
   /* Mobile Country Code
    * Mobile Network Code
-   */
-  uint16_t mcc;
+   */uint16_t mcc;
   uint16_t mnc;
   uint8_t  mnc_digit_length;
+
 
   /* Default Paging DRX of the eNB as defined in TS 36.304 */
   paging_drx_t default_drx;
@@ -369,19 +382,19 @@ typedef struct s1ap_nas_first_req_s {
 
 typedef struct s1ap_uplink_nas_s {
   /* Unique UE identifier within an eNB */
-  unsigned eNB_ue_s1ap_id:24;
+  unsigned eNB_ue_s1ap_id: 24;
 
   /* NAS pdu */
   nas_pdu_t nas_pdu;
 } s1ap_uplink_nas_t;
 
 typedef struct s1ap_ue_cap_info_ind_s {
-  unsigned  eNB_ue_s1ap_id:24;
+  unsigned  eNB_ue_s1ap_id: 24;
   ue_radio_cap_t ue_radio_cap;
 } s1ap_ue_cap_info_ind_t;
 
 typedef struct s1ap_initial_context_setup_resp_s {
-  unsigned  eNB_ue_s1ap_id:24;
+  unsigned  eNB_ue_s1ap_id: 24;
 
   /* Number of e_rab setup-ed in the list */
   uint8_t       nb_of_e_rabs;
@@ -395,19 +408,19 @@ typedef struct s1ap_initial_context_setup_resp_s {
 } s1ap_initial_context_setup_resp_t;
 
 typedef struct s1ap_initial_context_setup_fail_s {
-  unsigned  eNB_ue_s1ap_id:24;
+  unsigned  eNB_ue_s1ap_id: 24;
 
   /* TODO add cause */
 } s1ap_initial_context_setup_fail_t, s1ap_ue_ctxt_modification_fail_t, s1ap_e_rab_setup_req_fail_t;
 
 typedef struct s1ap_nas_non_delivery_ind_s {
-  unsigned  eNB_ue_s1ap_id:24;
+  unsigned  eNB_ue_s1ap_id: 24;
   nas_pdu_t nas_pdu;
   /* TODO: add cause */
 } s1ap_nas_non_delivery_ind_t;
 
 typedef struct s1ap_ue_ctxt_modification_req_s {
-  unsigned  eNB_ue_s1ap_id:24;
+  unsigned  eNB_ue_s1ap_id: 24;
 
   /* Bit-mask of possible present parameters */
   s1ap_ue_ctxt_modification_present_t present;
@@ -425,12 +438,12 @@ typedef struct s1ap_ue_ctxt_modification_req_s {
 } s1ap_ue_ctxt_modification_req_t;
 
 typedef struct s1ap_ue_ctxt_modification_resp_s {
-  unsigned  eNB_ue_s1ap_id:24;
+  unsigned  eNB_ue_s1ap_id: 24;
 } s1ap_ue_ctxt_modification_resp_t;
 
 typedef struct s1ap_ue_release_complete_s {
 
-  unsigned eNB_ue_s1ap_id:24;
+  unsigned eNB_ue_s1ap_id: 24;
 
 } s1ap_ue_release_complete_t;
 
@@ -441,7 +454,7 @@ typedef struct s1ap_downlink_nas_s {
   uint16_t ue_initial_id;
 
   /* Unique UE identifier within an eNB */
-  unsigned eNB_ue_s1ap_id:24;
+  unsigned eNB_ue_s1ap_id: 24;
 
   /* NAS pdu */
   nas_pdu_t nas_pdu;
@@ -453,7 +466,7 @@ typedef struct s1ap_initial_context_setup_req_s {
   uint16_t ue_initial_id;
 
   /* eNB ue s1ap id as initialized by S1AP layer */
-  unsigned eNB_ue_s1ap_id:24;
+  unsigned eNB_ue_s1ap_id: 24;
 
   /* UE aggregate maximum bitrate */
   ambr_t ue_ambr;
@@ -474,7 +487,7 @@ typedef struct s1ap_paging_ind_s {
   /* UE identity index value.
    * Specified in 3GPP TS 36.304
    */
-  unsigned ue_index_value:10;
+  unsigned ue_index_value: 10;
 
   /* UE paging identity */
   ue_paging_identity_t ue_paging_identity;
@@ -496,7 +509,7 @@ typedef struct s1ap_e_rab_setup_req_s {
   uint16_t mme_ue_s1ap_id;
 
   /* eNB ue s1ap id as initialized by S1AP layer */
-  unsigned eNB_ue_s1ap_id:24;
+  unsigned eNB_ue_s1ap_id: 24;
 
   /* Number of e_rab to be setup in the list */
   uint8_t nb_e_rabs_tosetup;
@@ -507,7 +520,7 @@ typedef struct s1ap_e_rab_setup_req_s {
 } s1ap_e_rab_setup_req_t;
 
 typedef struct s1ap_e_rab_setup_resp_s {
-  unsigned  eNB_ue_s1ap_id:24;
+  unsigned  eNB_ue_s1ap_id: 24;
 
   /* Number of e_rab setup-ed in the list */
   uint8_t       nb_of_e_rabs;
@@ -524,13 +537,16 @@ typedef struct s1ap_e_rab_setup_resp_s {
 // S1AP --> RRC messages
 typedef struct s1ap_ue_release_command_s {
 
-  unsigned eNB_ue_s1ap_id:24;
+  unsigned eNB_ue_s1ap_id: 24;
 
 } s1ap_ue_release_command_t;
 
 typedef struct s1ap_rrcconnection_reconfiguration_handover_s {
 
-  unsigned eNB_ue_s1ap_id:24;
+  /* UE id for initial connection to S1AP */
+  uint16_t ue_initial_id;
+
+  unsigned eNB_ue_s1ap_id: 24;
 
 } s1ap_rrcconnection_reconfiguration_handover_t;
 
@@ -549,54 +565,140 @@ typedef enum S1ap_Cause_e {
 } s1ap_Cause_t;
 // S1AP <-- RRC messages
 typedef struct s1ap_ue_release_req_s {
-  unsigned      eNB_ue_s1ap_id:24;
+  unsigned      eNB_ue_s1ap_id: 24;
   s1ap_Cause_t  cause;
   long          cause_value;
 } s1ap_ue_release_req_t, s1ap_ue_release_resp_t;
 //新添
+typedef struct eci_s {
+  uint32_t enb_id:20;
+  uint32_t cell_id:8;
+  uint32_t empty:4;
+} eci_t;
+
 typedef struct s1ap_handover_req_s {
- /* UE id for initial connection to S1AP */
+  /* UE id for initial connection to S1AP */
   uint16_t ue_initial_id;
 
   /* MME UE id  */
   uint16_t mme_ue_s1ap_id;
 
   /* eNB ue s1ap id as initialized by S1AP layer */
-  unsigned eNB_ue_s1ap_id:24;
+  unsigned eNB_ue_s1ap_id: 24;
 
   s1ap_Cause_t  cause;
 
   long cause_value;
 
+  uint16_t ue_id_rnti;
+
+  unsigned int local_uid;
+
+  uint8_t *rrc_container_buf;
+
+  uint8_t rrc_container_len;
+
   /* Total number of e_rab already setup in the list */
-  uint8_t                           setup_e_rabs;
+  uint8_t setup_e_rabs;
   /* Number of e_rab to be setup in the list */
   uint8_t                            nb_of_e_rabs;
   /* list of e_rab to be setup by RRC layers */
   e_rab_t  e_rab_param[S1AP_MAX_E_RAB];
 
+  PhysCellId_t sourceCellId;
+
+  uint8_t modid_s; //module_idP of serving cell
+
+  uint8_t modid_t; //module_idP of target cell
+
+  PhysCellId_t targetCellId;
+
+  uint16_t targetMCC;
+
+  uint16_t targetMNC;
+
+  uint8_t  target_MNC_Digit_Length;
+
+  uint32_t targeteNBID;
+
+  uint16_t targetTAC;
+
 } s1ap_handover_req_t;
 
-typedef struct s1ap_handover_request_s {
-   /* UE id for initial connection to S1AP */
-  uint16_t ue_initial_id;
+typedef struct s1ap_handover_req_ack_s {
 
+  uint8_t *rrc_container_buf;
+
+  uint8_t rrc_container_len;
+
+} s1ap_handover_req_ack_t;
+//write by coco
+typedef struct s1ap_handover_notify_s {
   /* MME UE id  */
   uint16_t mme_ue_s1ap_id;
 
   /* eNB ue s1ap id as initialized by S1AP layer */
-  unsigned eNB_ue_s1ap_id:24;
-  
+  unsigned eNB_ue_s1ap_id: 24;
+} s1ap_handover_notify_t;
+
+typedef struct S1AP_OCTET_STRING {
+  uint8_t *buf; /* Buffer with consecutive OCTET_STRING bits */
+  int size; /* Size of the buffer */
+} S1AP_OCTET_STRING_t;
+
+typedef S1AP_OCTET_STRING_t   Source_ToTarget_TransparentContainer_t;
+
+typedef struct s1ap_handover_request_s {
+  /* UE id for initial connection to S1AP */
+  uint16_t ue_initial_id;
+
+  /* MME UE id  */
+  unsigned long mme_ue_s1ap_id;
+
+  /* eNB ue s1ap id as initialized by S1AP layer */
+  unsigned eNB_ue_s1ap_id: 24;
+
   s1ap_Cause_t  cause;
-  
+
   long          cause_value;
-  
+
   /* Total number of e_rab already setup in the list */
   uint8_t                           setup_e_rabs;
   /* Number of e_rab to be setup in the list */
   uint8_t                            nb_of_e_rabs;
   /* list of e_rab to be setup by RRC layers */
   e_rab_t  e_rab_param[S1AP_MAX_E_RAB];
+
+  //20180502添加
+
+  /* Security algorithms */
+  security_capabilities_t security_capabilities;
+
+  /* Security key */
+  uint8_t security_key[SECURITY_KEY_LENGTH];
+
+  Source_ToTarget_TransparentContainer_t source_ToTarget_TransparentContainer;
+
+  //New Handover Request
+  uint8_t *rrc_container_buf;
+
+  uint8_t rrc_container_len;
+
+  PhysCellId_t targetCellId;
+
+  uint16_t targetMCC;
+
+  uint16_t targetMNC;
+
+  uint8_t  target_MNC_Digit_Length;
+
+  uint32_t targeteNBID;
+
+  uint16_t targetTAC;
+
+  uint8_t nb_e_rabs_tosetup;
+
+  e_rab_t e_rab_setup_params[S1AP_MAX_E_RAB];
 
 } s1ap_handover_request_t;
 #endif /* S1AP_MESSAGES_TYPES_H_ */

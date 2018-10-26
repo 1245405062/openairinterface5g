@@ -42,3 +42,6 @@ MESSAGE_DEF(S1AP_UE_CONTEXT_RELEASE_COMPLETE, MESSAGE_PRIORITY_MED, s1ap_ue_cont
 
 //tianjia
 MESSAGE_DEF(S1AP_HANDOVER_REQUIRE , MESSAGE_PRIORITY_MED, s1ap_handover_req_t, s1ap_handover_req)
+MESSAGE_DEF(S1AP_HANDOVER_REQUEST_ACK , MESSAGE_PRIORITY_MED, s1ap_handover_req_ack_t, s1ap_handover_req_ack)
+//by coco
+MESSAGE_DEF(S1AP_HANDOVER_NOTIFY  , MESSAGE_PRIORITY_MED, s1ap_handover_notify_t, s1ap_handover_notify)

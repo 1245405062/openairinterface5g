@@ -426,6 +426,12 @@ rrc_mac_config_req(
 
       // store the previous rnti in case of failure, and set thenew rnti
       UE_mac_inst[Mod_idP].crnti_before_ho = UE_mac_inst[Mod_idP].crnti;
+	  int ss=0;
+	  for(ss=0;ss<sizeof(uint16_t);ss++){
+			printf("UE_mac_inst[Mod_idP].crnti:%d\n", *(&UE_mac_inst[Mod_idP].crnti+ss));
+	  }
+	  fflush(stdout);
+	 
       UE_mac_inst[Mod_idP].crnti = ((mobilityControlInfo->newUE_Identity.buf[0])|(mobilityControlInfo->newUE_Identity.buf[1]<<8));
       LOG_I(MAC,"[UE %d] Received new identity %x from %d\n", Mod_idP, UE_mac_inst[Mod_idP].crnti, eNB_index);
       UE_mac_inst[Mod_idP].rach_ConfigDedicated = malloc(sizeof(*mobilityControlInfo->rach_ConfigDedicated));

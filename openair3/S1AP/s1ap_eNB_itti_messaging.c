@@ -53,7 +53,7 @@ void s1ap_eNB_itti_send_nas_downlink_ind(instance_t instance,
   message_p = itti_alloc_new_message(TASK_S1AP, S1AP_DOWNLINK_NAS);
 
   s1ap_downlink_nas = &message_p->ittiMsg.s1ap_downlink_nas;
-
+  fflush(stdout);
   s1ap_downlink_nas->ue_initial_id  = ue_initial_id;
   s1ap_downlink_nas->eNB_ue_s1ap_id = eNB_ue_s1ap_id;
   s1ap_downlink_nas->nas_pdu.buffer = nas_pdu;

@@ -1211,6 +1211,7 @@ int main( int argc, char **argv )
   set_comp_log(ENB_APP, LOG_TRACE, LOG_MED, 1);
   set_comp_log(S1AP, LOG_TRACE, LOG_MED, 1);
   set_comp_log(SCTP, LOG_TRACE, LOG_FULL, 1);
+  //TomDing modify
   asn_debug      = 0;
   asn1_xer_print = 1;
 

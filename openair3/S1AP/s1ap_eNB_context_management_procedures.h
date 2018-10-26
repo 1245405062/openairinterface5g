@@ -28,9 +28,9 @@ int s1ap_ue_context_release_complete(instance_t instance,
 
 int s1ap_ue_context_release_req(instance_t instance,
                                 s1ap_ue_release_req_t *ue_release_req_p);
-int s1ap_send_handover_request_ack(uint32_t   assoc_id,uint32_t  stream);
-int s1ap_send_rrc_connection_reconfiguration(uint32_t   assoc_id,uint32_t  stream);
-
+int s1ap_send_handover_request_ack(uint32_t   assoc_id,uint32_t  stream,uint32_t   mme_ue_s1ap_id);
+int s1ap_send_rrc_connection_reconfiguration(S1ap_HandoverCommandIEs_t *handoverCommand_p,uint32_t   assoc_id,uint32_t  stream);
+int s1ap_send_handover_notify(instance_t instance,s1ap_handover_notify_t *s1ap_handover_notify_p);
 
 
 #endif /* S1AP_ENB_CONTEXT_MANAGEMENT_PROCEDURES_H_ */

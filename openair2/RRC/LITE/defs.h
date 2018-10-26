@@ -480,7 +480,9 @@ typedef struct eNB_RRC_INST_s {
 #endif
   hash_table_t                      *initial_id2_s1ap_ids; // key is    content is rrc_ue_s1ap_ids_t
   hash_table_t                      *s1ap_id2_s1ap_ids   ; // key is    content is rrc_ue_s1ap_ids_t
-
+  //TomDing Modify; The UE's Radio Access Capability
+  uint8_t *UECapability;										
+  uint8_t UECapability_size;
 #ifdef LOCALIZATION
   /// localization type, 0: power based, 1: time based
   uint8_t loc_type;

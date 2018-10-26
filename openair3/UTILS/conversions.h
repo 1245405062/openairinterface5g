@@ -158,8 +158,9 @@ do {                                    \
 #define BIT_STRING_TO_CELL_IDENTITY(aSN, vALUE)                     \
 do {                                                                \
     DevCheck((aSN)->bits_unused == 4, (aSN)->bits_unused, 4, 0);    \
-    vALUE = ((aSN)->buf[0] << 20) | ((aSN)->buf[1] << 12) |         \
-        ((aSN)->buf[2] << 4) | (aSN)->buf[3];                       \
+    vALUE.enb_id = ((aSN)->buf[0] << 12) | ((aSN)->buf[1] << 4) |   \
+        ((aSN)->buf[2] >> 4);                                       \
+    vALUE.cell_id = ((aSN)->buf[2] << 4) | ((aSN)->buf[3] >> 4);    \
 } while(0)
 
 #define MCC_HUNDREDS(vALUE) \

@@ -150,6 +150,16 @@ int s1ap_eNB_encode_initiating(s1ap_message *s1ap_message_p,
     message_id = S1AP_UE_CONTEXT_RELEASE_REQ_LOG;
     break;
 
+//by coco
+  case S1ap_ProcedureCode_id_HandoverNotification:
+    printf("in procedure code switch notify case\n");
+    ret = s1ap_eNB_encode_enb_send_handover_notify(
+	    &s1ap_message_p->msg.s1ap_HandoverNotifyIEs, buffer, len);
+    printf("coco:the ret is %d\n",ret);
+    s1ap_xer_print_s1ap_handovernotify(s1ap_xer__print2sp,message_string, s1ap_message_p);
+	message_id = S1AP_HANDOVER_NOTIFY;  
+    break;
+
   case S1ap_ProcedureCode_id_S1Setup:
     ret = s1ap_eNB_encode_s1_setup_request(
             &s1ap_message_p->msg.s1ap_S1SetupRequestIEs, buffer, len);
@@ -600,7 +610,7 @@ int s1ap_eNB_encode_enb_send_handover_require(S1ap_HandoverRequiredIEs_t  *s1ap_
   }
   printf("s1ap_eNB_encode_enb_send_handover_require success\n");
 
-  return s1ap_generate_successfull_outcome(buffer,
+  return s1ap_generate_initiating_message(buffer,
          length,
          S1ap_ProcedureCode_id_HandoverPreparation,
          S1ap_Criticality_reject,
@@ -636,6 +646,34 @@ int s1ap_eNB_encode_enb_send_handover_request_ack(S1ap_HandoverRequestAcknowledg
          handover_request_ack_p);
 }
 
+//wirte by coco
+int s1ap_eNB_encode_enb_send_handover_notify(S1ap_HandoverNotifyIEs_t  *s1ap_HandoverNotifyIEs,
+		uint8_t                              **buffer,
+		uint32_t                              *length)
+{
+	S1ap_HandoverNotify_t  handover_notify;
+	S1ap_HandoverNotify_t  *handover_notify_p = &handover_notify;
+
+	memset((void *)handover_notify_p, 0,
+		   sizeof(handover_notify));
+	printf("shall we be here??\n");
+	fflush(stdout);
+	if (s1ap_encode_s1ap_handovernotifyies(handover_notify_p, s1ap_HandoverNotifyIEs) < 0) {
+		printf("s1ap_eNB_encode_enb_send_handover_notify failed\n");
+		fflush(stdout);
+		return -1;
+	}
+	printf("s1ap_eNB_encode_enb_send_handover_notify success\n");
+	printf("by coco");
+	fflush(stdout);
+
+	return s1ap_generate_initiating_message(buffer,
+			length,
+			S1ap_ProcedureCode_id_HandoverNotification,
+			S1ap_Criticality_reject,
+			&asn_DEF_S1ap_HandoverNotify,
+			handover_notify_p);
+}
 
 
 

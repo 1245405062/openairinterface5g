@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
 
   SupportedTAs_Item_t ta;
   PLMNidentity_t plmnIdentity;
-
+	//TomDing modify
   asn_debug = 0;
   asn1_xer_print = 0;
 

@@ -18,7 +18,7 @@
  * For more information about the OpenAirInterface (OAI) Software Alliance:
  *      contact@openairinterface.org
  */
-
+# include "handover_UE.h"
 #if defined(ENABLE_ITTI)
 # include "intertask_interface.h"
 # include "create_tasks.h"
@@ -118,7 +118,13 @@ int create_tasks(uint32_t enb_nb, uint32_t ue_nb)
         LOG_E(RRC, "Create task for RRC UE failed\n");
         return -1;
       }
-
+      
+      if (itti_create_task(TASK_HANDOVER_UE, handover_ue_task, NULL) < 0) {
+        printf("[HANDOVER] Create Handover_UE_Task Error\n");
+        fflush(stdout);
+        return -1;
+      }
+      
 #   if ENABLE_RAL
 
       if (itti_create_task (TASK_RAL_UE, mRAL_task, NULL) < 0) {

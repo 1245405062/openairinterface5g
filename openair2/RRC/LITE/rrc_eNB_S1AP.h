@@ -212,7 +212,10 @@ int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_REQ (MessageDef *msg_p, const char *
  *\return 0 when successful, -1 if the UE index can not be retrieved.
  */
 int rrc_eNB_process_S1AP_UE_CONTEXT_RELEASE_COMMAND (MessageDef *msg_p, const char *msg_name, instance_t instance);
-
+/*
+ *\TomDing Add rrc_eNB_process_S1AP_RRCCONNECTION_RECONFIGURATION_HANDOVER 
+ */
+int rrc_eNB_process_S1AP_RRCCONNECTION_RECONFIGURATION_HANDOVER(MessageDef *msg_p,const char *msg_name,instance_t instance,mui_t *rrc_eNB_mui);
 
 
 #   endif

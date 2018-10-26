@@ -53,7 +53,7 @@
 #include "s1ap_eNB_nas_procedures.h"
 #include "s1ap_eNB_management_procedures.h"
 #include "s1ap_eNB_context_management_procedures.h"
-
+#include "s1ap_eNB_context_management_procedures.c"
 #include "s1ap_eNB_itti_messaging.h"
 
 #include "s1ap_eNB_ue_context.h" // test, to be removed
@@ -381,11 +381,24 @@ void *s1ap_eNB_task(void *arg)
     case S1AP_HANDOVER_REQUIRE:{
         //s1ap_eNB_handover_require(ITTI_MESSAGE_GET_INSTANCE(received_msg),
          //       &S1AP_HANDOVER_REQUIRE(received_msg));
-        test_send(ITTI_MESSAGE_GET_INSTANCE(received_msg),&S1AP_HANDOVER_REQUIRE(received_msg));
+        printf("S1AP_HANDOVER_REQUIRE\n");
+        fflush(stdout);
+        s1ap_send_handover_require(ITTI_MESSAGE_GET_INSTANCE(received_msg),&S1AP_HANDOVER_REQUIRE(received_msg));
        
     }
     break;
+    case S1AP_HANDOVER_REQUEST_ACK:{
+      printf("[HO REQUEST] Received S1AP_HANDOVER_REQUEST_ACK\n");
+      fflush(stdout);
+      //s1ap_send_handover_request_ack()
 
+    }
+    //write by coco
+    case S1AP_HANDOVER_NOTIFY:{
+      printf("step3 by coco:in s1ap_handover_notify task\n");	    
+	s1ap_send_handover_notify(ITTI_MESSAGE_GET_INSTANCE(received_msg),&S1AP_HANDOVER_NOTIFY(received_msg));
+	}
+    break;
     case S1AP_UE_CONTEXT_RELEASE_REQ: {
       s1ap_eNB_instance_t               *s1ap_eNB_instance_p           = NULL; // test
       struct s1ap_eNB_ue_context_s      *ue_context_p                  = NULL; // test

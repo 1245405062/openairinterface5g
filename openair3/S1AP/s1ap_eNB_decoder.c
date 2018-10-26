@@ -135,7 +135,13 @@ static int s1ap_eNB_decode_initiating_message(s1ap_message *message,
     S1AP_INFO("TODO  E_RABRelease nitiating message\n");
     free(message_string);
     break;
-
+case S1ap_ProcedureCode_id_HandoverResourceAllocation:
+  	ret = s1ap_decode_s1ap_handoverrequesties(
+			  &message->msg.s1ap_HandoverRequestIEs, &initiating_p->value);
+	s1ap_xer_print_s1ap_handoverrequest(s1ap_xer__print2sp, message_string, message);
+	message_id=S1AP_HANDOVER_REQUEST;
+	fflush(stdout);
+  	break;
   default:
     S1AP_ERROR("Unknown procedure ID (%d) for initiating message\n",
                (int)initiating_p->procedureCode);
@@ -174,14 +180,6 @@ static int s1ap_eNB_decode_successful_outcome(s1ap_message *message,
     message_id = S1AP_S1_SETUP_LOG;
     break;
 
-  case S1ap_ProcedureCode_id_HandoverResourceAllocation:
-  	ret = s1ap_decode_s1ap_handoverrequesties(
-		    &message->msg.s1ap_HandoverRequestIEs, &successfullOutcome_p->value);
-	s1ap_xer_print_s1ap_handoverrequest(s1ap_xer__print2sp, message_string, message);
-	message_id=S1AP_HANDOVER_REQUEST;
-	printf("magicwo_received_handover_request\n");
-	fflush(stdout);
-  	break;
   case S1ap_ProcedureCode_id_HandoverPreparation:
   	ret = s1ap_decode_s1ap_handovercommandies(
 		 &message->msg.s1ap_HandoverCommandIEs, &successfullOutcome_p->value);

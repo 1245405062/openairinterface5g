@@ -1529,9 +1529,13 @@ SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
 	 * X.691#18.1 Whether structure is extensible
 	 * and whether to encode extensions
 	 */
+	printf("TomDing SEQUENCE flag 1\n");
+	fflush(stdout);
 	if(specs->ext_before >= 0) {
 		n_extensions = SEQUENCE_handle_extensions(td, sptr, 0, 0);
 		per_put_few_bits(po, n_extensions ? 1 : 0, 1);
+		printf("TomDing SEQUENCE flag 2\n");
+		fflush(stdout);
 	} else {
 		n_extensions = 0;	/* There are no extensions to encode */
 	}
@@ -1542,25 +1546,32 @@ SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
 		void *memb_ptr;		/* Pointer to the member */
 		void **memb_ptr2;	/* Pointer to that pointer */
 		int present;
-
+		printf("TomDing SEQUENCE flag 3\n");
+		fflush(stdout);
 		edx = specs->oms[i];
 		elm = &td->elements[edx];
 
 		/* Fetch the pointer to this member */
 		if(elm->flags & ATF_POINTER) {
+			
 			memb_ptr2 = (void **)((char *)sptr + elm->memb_offset);
 			present = (*memb_ptr2 != 0);
+			printf("TomDing SEQUENCE flag 4\n");
+			fflush(stdout);
 		} else {
 			memb_ptr = (void *)((char *)sptr + elm->memb_offset);
 			memb_ptr2 = &memb_ptr;
 			present = 1;
+			printf("TomDing SEQUENCE flag 5\n");
+			fflush(stdout);
 		}
 
 		/* Eliminate default values */
 		if(present && elm->default_value
 		&& elm->default_value(0, memb_ptr2) == 1)
 			present = 0;
-
+		printf("TomDing SEQUENCE flag 6\n");
+		fflush(stdout);
 		ASN_DEBUG("Element %s %s %s->%s is %s",
 			elm->flags & ATF_POINTER ? "ptr" : "inline",
 			elm->default_value ? "def" : "wtv",
@@ -1575,7 +1586,8 @@ SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
 	ASN_DEBUG("ext_after = %d, ec = %d, eb = %d", specs->ext_after, td->elements_count, specs->ext_before);
 	for(edx = 0; edx < ((specs->ext_after < 0)
 		? td->elements_count : specs->ext_before - 1); edx++) {
-
+		printf("TomDing SEQUENCE flag 7\n");
+		fflush(stdout);
 		asn_TYPE_member_t *elm = &td->elements[edx];
 		void *memb_ptr;		/* Pointer to the member */
 		void **memb_ptr2;	/* Pointer to that pointer */
@@ -1587,6 +1599,8 @@ SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
 
 		/* Fetch the pointer to this member */
 		if(elm->flags & ATF_POINTER) {
+			printf("TomDing SEQUENCE flag 8\n");
+			fflush(stdout);
 			memb_ptr2 = (void **)((char *)sptr + elm->memb_offset);
 			if(!*memb_ptr2) {
 				ASN_DEBUG("Element %s %d not present",
@@ -1595,12 +1609,14 @@ SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
 					continue;
 				/* Mandatory element is missing */
 				_ASN_ENCODE_FAILED;
+				
 			}
 		} else {
 			memb_ptr = (void *)((char *)sptr + elm->memb_offset);
 			memb_ptr2 = &memb_ptr;
 		}
-
+		printf("TomDing SEQUENCE flag 9n");
+		fflush(stdout);
 		/* Eliminate default values */
 		if(elm->default_value && elm->default_value(0, memb_ptr2) == 1)
 			continue;
@@ -1614,7 +1630,8 @@ SEQUENCE_encode_uper(asn_TYPE_descriptor_t *td,
 
 	/* No extensions to encode */
 	if(!n_extensions) _ASN_ENCODED_OK(er);
-
+	printf("TomDing SEQUENCE flag 10\n");
+	fflush(stdout);
 	ASN_DEBUG("Length of %d bit-map", n_extensions);
 	/* #18.8. Write down the presence bit-map length. */
 	if(uper_put_nslength(po, n_extensions))
