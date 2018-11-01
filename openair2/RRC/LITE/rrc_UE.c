@@ -1402,11 +1402,15 @@ rrc_ue_process_radioResourceConfigDedicated(
             {
                 if (UE_rrc_inst[ctxt_pP->module_id].SRB1_config[eNB_index])
                 {
+                    printf("TomDing Exist SRB_id:%d\n",SRB_id );
+                    fflush(stdout);
                     memcpy(UE_rrc_inst[ctxt_pP->module_id].SRB1_config[eNB_index], radioResourceConfigDedicated->srb_ToAddModList->list.array[cnt],
                            sizeof(struct SRB_ToAddMod));
                 }
                 else
                 {
+                    printf("TomDing Establish SRB_id:%d\n",SRB_id );
+                    fflush(stdout);
                     UE_rrc_inst[ctxt_pP->module_id].SRB1_config[eNB_index] = radioResourceConfigDedicated->srb_ToAddModList->list.array[cnt];
                     rrc_ue_establish_srb1(ctxt_pP->module_id, ctxt_pP->frame, eNB_index, radioResourceConfigDedicated->srb_ToAddModList->list.array[cnt]);
 
@@ -1597,12 +1601,16 @@ rrc_ue_process_radioResourceConfigDedicated(
 
             if (UE_rrc_inst[ctxt_pP->module_id].DRB_config[eNB_index][DRB_id])
             {
+                printf("TomDing Exist DRB_id:%d",DRB_id);
+                fflush(stdout);
                 memcpy(UE_rrc_inst[ctxt_pP->module_id].DRB_config[eNB_index][DRB_id],
                        radioResourceConfigDedicated->drb_ToAddModList->list.array[i],
                        sizeof(struct DRB_ToAddMod));
             }
             else
             {
+                printf("TomDing Establish DRB_id:%d",DRB_id);
+                fflush(stdout);
                 UE_rrc_inst[ctxt_pP->module_id].DRB_config[eNB_index][DRB_id] = radioResourceConfigDedicated->drb_ToAddModList->list.array[i];
                 rrc_ue_establish_drb(ctxt_pP->module_id, ctxt_pP->frame, eNB_index, radioResourceConfigDedicated->drb_ToAddModList->list.array[i]);
                 // MAC/PHY Configuration

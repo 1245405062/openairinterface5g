@@ -1436,6 +1436,7 @@ rrc_eNB_generate_dedicatedRRCConnectionReconfiguration(const protocol_ctxt_t *co
 #if defined(Rel10) || defined(Rel14)
                                            , (SCellToAddMod_r10_t *)NULL
 #endif
+                                           ,(struct SecurityConfigHO *)NULL
                                           );
 
 
@@ -2192,6 +2193,7 @@ rrc_eNB_generate_defaultRRCConnectionReconfiguration(const protocol_ctxt_t *cons
 #if defined(Rel10) || defined(Rel14)
                                            , (SCellToAddMod_r10_t *)NULL
 #endif
+                                           ,(struct SecurityConfigHO *)NULL
                                           );
 
 #ifdef RRC_MSG_PRINT
@@ -2303,6 +2305,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_SCell(
 #if defined(Rel10) || defined(Rel14)
                                            , ue_context_pP->ue_context.sCell_config
 #endif
+                                           ,(struct SecurityConfigHO *)NULL
                                           );
     LOG_I(RRC, "[eNB %d] Frame %d, Logical Channel DL-DCCH, Generate RRCConnectionReconfiguration (bytes %d, UE id %x)\n",
           ctxt_pP->module_id, ctxt_pP->frame, size, ue_context_pP->ue_context.rnti);
@@ -2375,7 +2378,7 @@ rrc_eNB_process_MeasurementReport(
         LOG_I(RRC, "DO THIS\n");
         // just for test by coco
         printf("step1 by coco,just for test\n");
-        rrc_eNB_do_send_notify(ctxt_pP, ue_context_pP);
+        //rrc_eNB_S1AP_send_handover_notify(ctxt_pP, ue_context_pP);
         printf("MNC LIST 1:[%d]\n", *measResults2->measResultNeighCells->choice.
                measResultListEUTRA.list.array[0]->cgi_Info->cellGlobalId.plmn_Identity.mnc.list.array[0]);
         fflush(stdout);
@@ -3569,6 +3572,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover(
 #if defined(Rel10) || defined(Rel14)
                , NULL   // SCellToAddMod_r10_t
 #endif
+               ,(struct SecurityConfigHO *)NULL
            );
 
     LOG_I(RRC,
@@ -3713,7 +3717,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover(
   if (rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated) {
   rrc_ue_process_radioResourceConfigDedicated(enb_mod_idP,frameP,CH_index,
   rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.radioResourceConfigDedicated);
-
+t
   }
 
   // check other fields for
@@ -3726,7 +3730,8 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover_125t(
     rrc_eNB_ue_context_t *const ue_context_pP,
     uint8_t *buffer,
     PhysCellId_t targetPhyId,
-    long preambleIndex
+    long preambleIndex,
+    security_capabilities_t security_capabilities
 )
 //-----------------------------------------------------------------------------
 {
@@ -3766,6 +3771,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover_125t(
     MeasIdToAddMod_t                   *MeasId0, *MeasId1, *MeasId2, *MeasId3, *MeasId4, *MeasId5;
     QuantityConfig_t                   *quantityConfig;
     MobilityControlInfo_t              *mobilityInfo;
+    struct SecurityConfigHO            *securityConfigHO;
     // HandoverCommand_t handoverCommand;
     //uint8_t                             sourceModId =
     //  get_adjacent_cell_mod_id(ue_context_pP->ue_context.handover_info->as_context.reestablishmentInfo->sourcePhysCellId);
@@ -4133,6 +4139,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover_125t(
     mac_MainConfig->ext1->sr_ProhibitTimer_r9 = sr_ProhibitTimer_r9;
     //sps_RA_ConfigList_rlola = NULL;
 #endif
+    //配置MeasIdToAddModList_t、ReportConfig_list和MeasObj_list
     // Measurement ID list
     MeasId_list = CALLOC(1, sizeof(*MeasId_list));
     memset((void *)MeasId_list, 0, sizeof(*MeasId_list));
@@ -4367,8 +4374,9 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover_125t(
     /* mobilityinfo  */
     mobilityInfo = CALLOC(1, sizeof(*mobilityInfo));
     memset((void *)mobilityInfo, 0, sizeof(*mobilityInfo));
-    //ZJR
+    //targetPhysCellId为目标物理小区ID
     mobilityInfo->targetPhysCellId = targetPhyId;
+
     printf("TomDing ue_context_pP->ue_context.handover_info->modid_t:%d\n", ue_context_pP->ue_context.handover_info->modid_t);
     //   (PhysCellId_t) two_tier_hexagonal_cellIds[ue_context_pP->ue_context.handover_info->modid_t];
     printf("TomDing  mobilityInfo->targetPhysCellID=%d\n", mobilityInfo->targetPhysCellId);
@@ -4378,12 +4386,12 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover_125t(
           mobilityInfo->targetPhysCellId,
           ctxt_pP->module_id,
           ue_context_pP->ue_context.rnti);
-
+    //additionalSpectrumEmission为载波聚合,此处填写1但是应该不会做任何处理
     mobilityInfo->additionalSpectrumEmission = CALLOC(1, sizeof(*mobilityInfo->additionalSpectrumEmission));
     *mobilityInfo->additionalSpectrumEmission = 1;  //Check this value!
-
+    //T304定时器,ms50代表50ms
     mobilityInfo->t304 = MobilityControlInfo__t304_ms50;    // need to configure an appropriate value here
-
+    //配置C-RNTI值,该值的生成为随机
     // New UE Identity (C-RNTI) to identify an UE uniquely in a cell
     mobilityInfo->newUE_Identity.size = 2;
     mobilityInfo->newUE_Identity.bits_unused = 0;
@@ -4392,7 +4400,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover_125t(
 
     //memset((void *)&mobilityInfo->radioResourceConfigCommon,(void *)&rrc_inst->sib2->radioResourceConfigCommon,sizeof(RadioResourceConfigCommon_t));
     //memset((void *)&mobilityInfo->radioResourceConfigCommon,0,sizeof(RadioResourceConfigCommon_t));
-
+    //配置radioResourceConfigCommon,主要是封装了SIB2消息
     // Configuring radioResourceConfigCommon
     mobilityInfo->radioResourceConfigCommon.rach_ConfigCommon =
         CALLOC(1, sizeof(*mobilityInfo->radioResourceConfigCommon.rach_ConfigCommon));
@@ -4434,6 +4442,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover_125t(
     mobilityInfo->radioResourceConfigCommon.ul_CyclicPrefixLength =
         rrc_inst->carrier[0] /* CROUX TBC */.sib2->radioResourceConfigCommon.ul_CyclicPrefixLength;
     //End of configuration of radioResourceConfigCommon
+    //carrierFreq目前设置为36090(openair默认)
     mobilityInfo->carrierFreq = CALLOC(1, sizeof(*mobilityInfo->carrierFreq));  //CALLOC(1,sizeof(CarrierFreqEUTRA_t)); 36090
     mobilityInfo->carrierFreq->dl_CarrierFreq = 36090;
     mobilityInfo->carrierFreq->ul_CarrierFreq = NULL;
@@ -4442,6 +4451,8 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover_125t(
             *mobilityInfo->carrierBandwidth));    //CALLOC(1,sizeof(struct CarrierBandwidthEUTRA));  AllowedMeasBandwidth_mbw25
     mobilityInfo->carrierBandwidth->dl_Bandwidth = CarrierBandwidthEUTRA__dl_Bandwidth_n25;
     mobilityInfo->carrierBandwidth->ul_Bandwidth = NULL;
+
+    //rach_ConfigDedicated存储Preamble
     mobilityInfo->rach_ConfigDedicated = CALLOC(1, sizeof(struct RACH_ConfigDedicated));
     mobilityInfo->rach_ConfigDedicated->ra_PreambleIndex=preambleIndex;
     mobilityInfo->rach_ConfigDedicated->ra_PRACH_MaskIndex=0;
@@ -4521,7 +4532,15 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover_125t(
 
     //  rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.measConfig->reportConfigToAddModList = ReportConfig_list;
     memset(buffer, 0, RRC_BUF_SIZE);
-
+    //配置securityConfigHO
+    securityConfigHO=CALLOC(1, sizeof(struct SecurityConfigHO));
+    securityConfigHO->handoverType.present=SecurityConfigHO__handoverType_PR_intraLTE;
+    struct SecurityAlgorithmConfig  *securityAlgorithmConfig=CALLOC(1, sizeof(struct SecurityAlgorithmConfig));
+    securityAlgorithmConfig->cipheringAlgorithm=rrc_eNB_select_ciphering (security_capabilities.encryption_algorithms);
+    securityAlgorithmConfig->integrityProtAlgorithm=rrc_eNB_select_integrity (security_capabilities.integrity_algorithms);
+    securityConfigHO->handoverType.choice.intraLTE.securityAlgorithmConfig=securityAlgorithmConfig;
+    securityConfigHO->handoverType.choice.intraLTE.keyChangeIndicator=0;
+    securityConfigHO->handoverType.choice.intraLTE.nextHopChainingCount=0;
     size = do_RRCConnectionReconfiguration(
                ctxt_pP,
                buffer,
@@ -4545,6 +4564,7 @@ rrc_eNB_generate_RRCConnectionReconfiguration_handover_125t(
 #if defined(Rel10) || defined(Rel14)
                , NULL   // SCellToAddMod_r10_t
 #endif
+               ,(struct SecurityConfigHO *)securityConfigHO
            );
 
     LOG_I(RRC,
@@ -5878,8 +5898,9 @@ rrc_eNB_decode_dcch(
                 printf("TomDing rrc_TransactionIdentifier=%d\n", ul_dcch_msg->message.choice.c1.choice.rrcConnectionReconfigurationComplete.rrc_TransactionIdentifier);
                 if (ul_dcch_msg->message.choice.c1.choice.rrcConnectionReconfigurationComplete.rrc_TransactionIdentifier == 1)
                 {
-                    printf("step1 by coco,just for test\n");
-                    rrc_eNB_do_send_notify(ctxt_pP, ue_context_p);
+                    printf("step1 by coco,just for test emmm\n");
+                    rrc_eNB_S1AP_send_handover_notify(ctxt_pP, ue_context_p);
+                    rrc_eNB_S1AP_send_path_switch_request(ctxt_pP,ue_context_p);
                 }
 
 #if defined(FLEXRAN_AGENT_SB_IF)
@@ -6447,10 +6468,10 @@ rrc_enb_task(
             //instance, msg_name_p);
             break;
 
-        case S1AP_RRCCONNECTION_RECONFIGURATION_HANDOVER:
+        case S1AP_HANDOVER_COMMAND:
             printf("goto_generate_RRCConnectionReconfiguration_handover\n");
             //Add TomDing
-            rrc_eNB_process_S1AP_RRCCONNECTION_RECONFIGURATION_HANDOVER(msg_p, msg_name_p, instance, &rrc_eNB_mui );
+            rrc_eNB_process_S1AP_HANDOVER_COMMAND(msg_p, msg_name_p, instance, &rrc_eNB_mui );
             fflush(stdout);
             //rrc_eNB_generate_RRCConnectionReconfiguration_handover();
             break;
@@ -6542,6 +6563,7 @@ int rrc_eNB_process_HandoverRequest(MessageDef *msg_p, const char *msg_name, ins
             //尝试获取rnti的目标上下文并进行上下文的切换配置
             ue_context_target_p = rrc_eNB_get_next_free_ue_context(&ctxt, random_value);
 
+            ue_context_target_p->ue_context.eNB_ue_s1ap_id=S1AP_HANDOVER_REQUEST(msg_p).eNB_ue_s1ap_id;
             ue_context_target_p->ue_context.handover_info = CALLOC(1, sizeof(*(ue_context_target_p->ue_context.handover_info)));
 
             ue_context_target_p->ue_context.handover_info->ho_prepare = 0x00;// 0xFF;
@@ -6558,20 +6580,25 @@ int rrc_eNB_process_HandoverRequest(MessageDef *msg_p, const char *msg_name, ins
             {
                 int i;
                 memset(&create_tunnel_req, 0, sizeof(create_tunnel_req));
-                uint8_t nb_e_rabs_tosetup = S1AP_HANDOVER_REQUEST(msg_p).nb_e_rabs_tosetup;
+                uint8_t nb_e_rabs_tosetup = S1AP_HANDOVER_REQUEST(msg_p).nb_of_e_rabs;
 
                 // keep the previous bearer
                 // the index for the rec
                 for (i = 0; i < nb_e_rabs_tosetup; i++)
                 {
+                    printf("The index %d E-RAB ID:%d\n", i,S1AP_HANDOVER_REQUEST(msg_p).e_rab_param[i].e_rab_id);
+                    fflush(stdout);
+                    printf("sgw_addr:%x,%s\n",S1AP_HANDOVER_REQUEST(msg_p).e_rab_param[i].sgw_addr.buffer,
+                      S1AP_HANDOVER_REQUEST(msg_p).e_rab_param[i].sgw_addr.buffer);
+                    fflush(stdout);
                     if (ue_context_target_p->ue_context.e_rab[i + ue_context_target_p->ue_context.setup_e_rabs].status == E_RAB_STATUS_DONE)
                         LOG_W(RRC, "E-RAB already configured, reconfiguring\n");
                     ue_context_target_p->ue_context.e_rab[i + ue_context_target_p->ue_context.setup_e_rabs].status = E_RAB_STATUS_NEW;
-                    ue_context_target_p->ue_context.e_rab[i + ue_context_target_p->ue_context.setup_e_rabs].param = S1AP_HANDOVER_REQUEST(msg_p).e_rab_setup_params[i];
-                    create_tunnel_req.eps_bearer_id[i]       = S1AP_HANDOVER_REQUEST(msg_p).e_rab_setup_params[i].e_rab_id;
-                    create_tunnel_req.sgw_S1u_teid[i]        = S1AP_HANDOVER_REQUEST(msg_p).e_rab_setup_params[i].gtp_teid;
+                    ue_context_target_p->ue_context.e_rab[i + ue_context_target_p->ue_context.setup_e_rabs].param = S1AP_HANDOVER_REQUEST(msg_p).e_rab_param[i];
+                    create_tunnel_req.eps_bearer_id[i]       = S1AP_HANDOVER_REQUEST(msg_p).e_rab_param[i].e_rab_id;
+                    create_tunnel_req.sgw_S1u_teid[i]        = S1AP_HANDOVER_REQUEST(msg_p).e_rab_param[i].gtp_teid;
                     memcpy(&create_tunnel_req.sgw_addr[i],
-                           &S1AP_HANDOVER_REQUEST(msg_p).e_rab_setup_params[i].sgw_addr,
+                           &S1AP_HANDOVER_REQUEST(msg_p).e_rab_param[i].sgw_addr,
                            sizeof(transport_layer_addr_t));
                     LOG_I(RRC, "E_RAB setup REQ: local index %d teid %u, eps id %d \n",
                           i + ue_context_target_p->ue_context.setup_e_rabs,
@@ -6597,14 +6624,14 @@ int rrc_eNB_process_HandoverRequest(MessageDef *msg_p, const char *msg_name, ins
             ue_context_target_p->ue_context.handover_info = CALLOC(1, sizeof(*(ue_context_target_p->ue_context.handover_info)));
             uint8_t *buffer = malloc(8192);
             uint8_t size = rrc_eNB_generate_RRCConnectionReconfiguration_handover_125t(&ctxt, ue_context_target_p, buffer,
-                           S1AP_HANDOVER_REQUEST(msg_p).targetCellId,preambleIndex);
+                           S1AP_HANDOVER_REQUEST(msg_p).targetCellId,preambleIndex,S1AP_HANDOVER_REQUEST(msg_p).security_capabilities);
             printf("[HO REQUEST] size:%d\n", size);
             fflush(stdout);
             if (size > 0)
             {
                 printf("[HO REQUEST] Handover Request Container Size>0\n");
             }
-            rrc_eNB_S1AP_send_handover_request_ack(&ctxt, buffer, size);
+            rrc_eNB_S1AP_send_handover_request_ack(&ctxt,ue_context_target_p, buffer, size);
         }
         else
         {

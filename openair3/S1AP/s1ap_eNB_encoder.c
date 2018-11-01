@@ -42,639 +42,690 @@
 #include "s1ap_eNB_encoder.h"
 
 static inline int s1ap_eNB_encode_initiating(s1ap_message *message,
-    uint8_t **buffer,
-    uint32_t *len);
+        uint8_t **buffer,
+        uint32_t *len);
 
 static inline int s1ap_eNB_encode_successfull_outcome(s1ap_message *message,
-    uint8_t **buffer, uint32_t *len);
+        uint8_t **buffer, uint32_t *len);
 
 static inline int s1ap_eNB_encode_unsuccessfull_outcome(s1ap_message *message,
-    uint8_t **buffer, uint32_t *len);
+        uint8_t **buffer, uint32_t *len);
 
 static inline int s1ap_eNB_encode_s1_setup_request(
-  S1ap_S1SetupRequestIEs_t *s1SetupRequestIEs, uint8_t **buffer, uint32_t *length);
+    S1ap_S1SetupRequestIEs_t *s1SetupRequestIEs, uint8_t **buffer, uint32_t *length);
 
 static inline int s1ap_eNB_encode_trace_failure(S1ap_TraceFailureIndicationIEs_t
-    *trace_failure_ies_p, uint8_t **buffer,
-    uint32_t *length);
+        *trace_failure_ies_p, uint8_t **buffer,
+        uint32_t *length);
 
 static inline int s1ap_eNB_encode_initial_ue_message(S1ap_InitialUEMessageIEs_t
-    *initialUEmessageIEs_p, uint8_t **buffer,
-    uint32_t *length);
+        *initialUEmessageIEs_p, uint8_t **buffer,
+        uint32_t *length);
 
 static inline int s1ap_eNB_encode_uplink_nas_transport(S1ap_UplinkNASTransportIEs_t
-    *uplinkNASTransportIEs,
+        *uplinkNASTransportIEs,
+        uint8_t **buffer,
+        uint32_t *length);
+
+static inline int s1ap_eNB_encode_ue_capability_info_indication(
+    S1ap_UECapabilityInfoIndicationIEs_t *ueCapabilityInfoIndicationIEs,
     uint8_t **buffer,
     uint32_t *length);
 
-static inline int s1ap_eNB_encode_ue_capability_info_indication(
-  S1ap_UECapabilityInfoIndicationIEs_t *ueCapabilityInfoIndicationIEs,
-  uint8_t **buffer,
-  uint32_t *length);
-
 static inline int s1ap_eNB_encode_initial_context_setup_response(
-  S1ap_InitialContextSetupResponseIEs_t *initialContextSetupResponseIEs,
-  uint8_t **buffer,
-  uint32_t *length);
+    S1ap_InitialContextSetupResponseIEs_t *initialContextSetupResponseIEs,
+    uint8_t **buffer,
+    uint32_t *length);
 
 static inline
 int s1ap_eNB_encode_nas_non_delivery(
-  S1ap_NASNonDeliveryIndication_IEs_t *nasNonDeliveryIndicationIEs,
-  uint8_t                            **buffer,
-  uint32_t                            *length);
+    S1ap_NASNonDeliveryIndication_IEs_t *nasNonDeliveryIndicationIEs,
+    uint8_t                            **buffer,
+    uint32_t                            *length);
 
 static inline
 int s1ap_eNB_encode_ue_context_release_complete(
-  S1ap_UEContextReleaseCompleteIEs_t *s1ap_UEContextReleaseCompleteIEs,
-  uint8_t                           **buffer,
-  uint32_t                           *length);
+    S1ap_UEContextReleaseCompleteIEs_t *s1ap_UEContextReleaseCompleteIEs,
+    uint8_t                           **buffer,
+    uint32_t                           *length);
 
 static inline
 int s1ap_eNB_encode_ue_context_release_request(
-  S1ap_UEContextReleaseRequestIEs_t *s1ap_UEContextReleaseRequestIEs,
-  uint8_t                              **buffer,
-  uint32_t                              *length);
+    S1ap_UEContextReleaseRequestIEs_t *s1ap_UEContextReleaseRequestIEs,
+    uint8_t                              **buffer,
+    uint32_t                              *length);
 
 static inline
 int s1ap_eNB_encode_e_rab_setup_response(S1ap_E_RABSetupResponseIEs_t  *E_RABSetupResponseIEs,
-					 uint8_t                              **buffer,
-					 uint32_t                              *length);
-
+        uint8_t                              **buffer,
+        uint32_t                              *length);
+static inline
+int s1ap_eNB_encode_path_switch_request(
+    S1ap_PathSwitchRequestIEs_t *s1ap_PathSwitchRequestIEs,
+    uint8_t                              **buffer,
+    uint32_t                              *length);
 int s1ap_eNB_encode_pdu(s1ap_message *message, uint8_t **buffer, uint32_t *len)
 {
-  DevAssert(message != NULL);
-  DevAssert(buffer != NULL);
-  DevAssert(len != NULL);
+    DevAssert(message != NULL);
+    DevAssert(buffer != NULL);
+    DevAssert(len != NULL);
 
-  switch(message->direction) {
-  case S1AP_PDU_PR_initiatingMessage:
-    return s1ap_eNB_encode_initiating(message, buffer, len);
+    switch(message->direction)
+    {
+    case S1AP_PDU_PR_initiatingMessage:
+        return s1ap_eNB_encode_initiating(message, buffer, len);
 
-  case S1AP_PDU_PR_successfulOutcome:
-    return s1ap_eNB_encode_successfull_outcome(message, buffer, len);
+    case S1AP_PDU_PR_successfulOutcome:
+        return s1ap_eNB_encode_successfull_outcome(message, buffer, len);
 
-  case S1AP_PDU_PR_unsuccessfulOutcome:
-    return s1ap_eNB_encode_unsuccessfull_outcome(message, buffer, len);
+    case S1AP_PDU_PR_unsuccessfulOutcome:
+        return s1ap_eNB_encode_unsuccessfull_outcome(message, buffer, len);
 
-  default:
-    S1AP_DEBUG("Unknown message outcome (%d) or not implemented",
-               (int)message->direction);
-    break;
-  }
+    default:
+        S1AP_DEBUG("Unknown message outcome (%d) or not implemented",
+                   (int)message->direction);
+        break;
+    }
 
-  return -1;
+    return -1;
 }
 
 static inline
 int s1ap_eNB_encode_initiating(s1ap_message *s1ap_message_p,
                                uint8_t **buffer, uint32_t *len)
 {
-  int ret = -1;
-  MessageDef *message_p;
-  char       *message_string = NULL;
-  size_t      message_string_size;
-  MessagesIds message_id;
+    int ret = -1;
+    MessageDef *message_p;
+    char       *message_string = NULL;
+    size_t      message_string_size;
+    MessagesIds message_id;
 
-  DevAssert(s1ap_message_p != NULL);
+    DevAssert(s1ap_message_p != NULL);
 
-  message_string = calloc(10000, sizeof(char));
+    message_string = calloc(10000, sizeof(char));
 
-  s1ap_string_total_size = 0;
+    s1ap_string_total_size = 0;
 
-  switch(s1ap_message_p->procedureCode) {
-  case S1ap_ProcedureCode_id_HandoverPreparation:
-    ret = s1ap_eNB_encode_enb_send_handover_require(
-            &s1ap_message_p->msg.s1ap_UEContextReleaseRequestIEs, buffer, len);
-    s1ap_xer_print_s1ap_uecontextreleaserequest(s1ap_xer__print2sp,
-        message_string, s1ap_message_p);
-    message_id = S1AP_UE_CONTEXT_RELEASE_REQ_LOG;
-    break;
+    switch(s1ap_message_p->procedureCode)
+    {
+    case S1ap_ProcedureCode_id_HandoverPreparation:
+        ret = s1ap_eNB_encode_enb_send_handover_require(
+                  &s1ap_message_p->msg.s1ap_UEContextReleaseRequestIEs, buffer, len);
+        s1ap_xer_print_s1ap_uecontextreleaserequest(s1ap_xer__print2sp,
+                message_string, s1ap_message_p);
+        message_id = S1AP_UE_CONTEXT_RELEASE_REQ_LOG;
+        break;
 
-//by coco
-  case S1ap_ProcedureCode_id_HandoverNotification:
-    printf("in procedure code switch notify case\n");
-    ret = s1ap_eNB_encode_enb_send_handover_notify(
-	    &s1ap_message_p->msg.s1ap_HandoverNotifyIEs, buffer, len);
-    printf("coco:the ret is %d\n",ret);
-    s1ap_xer_print_s1ap_handovernotify(s1ap_xer__print2sp,message_string, s1ap_message_p);
-	message_id = S1AP_HANDOVER_NOTIFY;  
-    break;
+    //by coco
+    case S1ap_ProcedureCode_id_HandoverNotification:
+        printf("in procedure code switch notify case\n");
+        ret = s1ap_eNB_encode_enb_send_handover_notify(
+                  &s1ap_message_p->msg.s1ap_HandoverNotifyIEs, buffer, len);
+        printf("coco:the ret is %d\n", ret);
+        s1ap_xer_print_s1ap_handovernotify(s1ap_xer__print2sp, message_string, s1ap_message_p);
+        message_id = S1AP_HANDOVER_NOTIFY;
+        break;
 
-  case S1ap_ProcedureCode_id_S1Setup:
-    ret = s1ap_eNB_encode_s1_setup_request(
-            &s1ap_message_p->msg.s1ap_S1SetupRequestIEs, buffer, len);
-    s1ap_xer_print_s1ap_s1setuprequest(s1ap_xer__print2sp, message_string, s1ap_message_p);
-    message_id = S1AP_S1_SETUP_LOG;
-    break;
+    case S1ap_ProcedureCode_id_S1Setup:
+        ret = s1ap_eNB_encode_s1_setup_request(
+                  &s1ap_message_p->msg.s1ap_S1SetupRequestIEs, buffer, len);
+        s1ap_xer_print_s1ap_s1setuprequest(s1ap_xer__print2sp, message_string, s1ap_message_p);
+        message_id = S1AP_S1_SETUP_LOG;
+        break;
+    //magicwo
+    case S1ap_ProcedureCode_id_PathSwitchRequest:
+        ret = s1ap_eNB_encode_path_switch_request(
+                  &s1ap_message_p->msg.s1ap_PathSwitchRequestIEs, buffer, len);
+        printf("coco:the pathswitch request ret is %d\n", ret);
+        fflush(stdout);
+        s1ap_xer_print_s1ap_pathswitchrequest(s1ap_xer__print2sp,
+                                              message_string, s1ap_message_p);
+        message_id = S1AP_PATH_SWITCH_REQUEST;
+        break;
+    case S1ap_ProcedureCode_id_uplinkNASTransport:
+        ret = s1ap_eNB_encode_uplink_nas_transport(
+                  &s1ap_message_p->msg.s1ap_UplinkNASTransportIEs, buffer, len);
+        s1ap_xer_print_s1ap_uplinknastransport(s1ap_xer__print2sp, message_string, s1ap_message_p);
+        message_id = S1AP_UPLINK_NAS_LOG;
+        break;
 
-  case S1ap_ProcedureCode_id_uplinkNASTransport:
-    ret = s1ap_eNB_encode_uplink_nas_transport(
-            &s1ap_message_p->msg.s1ap_UplinkNASTransportIEs, buffer, len);
-    s1ap_xer_print_s1ap_uplinknastransport(s1ap_xer__print2sp, message_string, s1ap_message_p);
-    message_id = S1AP_UPLINK_NAS_LOG;
-    break;
+    case S1ap_ProcedureCode_id_UECapabilityInfoIndication:
+        ret = s1ap_eNB_encode_ue_capability_info_indication(
+                  &s1ap_message_p->msg.s1ap_UECapabilityInfoIndicationIEs, buffer, len);
+        s1ap_xer_print_s1ap_uecapabilityinfoindication(s1ap_xer__print2sp, message_string, s1ap_message_p);
+        message_id = S1AP_UE_CAPABILITY_IND_LOG;
+        break;
 
-  case S1ap_ProcedureCode_id_UECapabilityInfoIndication:
-    ret = s1ap_eNB_encode_ue_capability_info_indication(
-            &s1ap_message_p->msg.s1ap_UECapabilityInfoIndicationIEs, buffer, len);
-    s1ap_xer_print_s1ap_uecapabilityinfoindication(s1ap_xer__print2sp, message_string, s1ap_message_p);
-    message_id = S1AP_UE_CAPABILITY_IND_LOG;
-    break;
+    case S1ap_ProcedureCode_id_initialUEMessage:
+        ret = s1ap_eNB_encode_initial_ue_message(
+                  &s1ap_message_p->msg.s1ap_InitialUEMessageIEs, buffer, len);
+        s1ap_xer_print_s1ap_initialuemessage(s1ap_xer__print2sp, message_string, s1ap_message_p);
+        message_id = S1AP_INITIAL_UE_MESSAGE_LOG;
+        break;
 
-  case S1ap_ProcedureCode_id_initialUEMessage:
-    ret = s1ap_eNB_encode_initial_ue_message(
-            &s1ap_message_p->msg.s1ap_InitialUEMessageIEs, buffer, len);
-    s1ap_xer_print_s1ap_initialuemessage(s1ap_xer__print2sp, message_string, s1ap_message_p);
-    message_id = S1AP_INITIAL_UE_MESSAGE_LOG;
-    break;
+    case S1ap_ProcedureCode_id_NASNonDeliveryIndication:
+        ret = s1ap_eNB_encode_nas_non_delivery(
+                  &s1ap_message_p->msg.s1ap_NASNonDeliveryIndication_IEs, buffer, len);
+        s1ap_xer_print_s1ap_nasnondeliveryindication_(s1ap_xer__print2sp,
+                message_string, s1ap_message_p);
+        message_id = S1AP_NAS_NON_DELIVERY_IND_LOG;
+        break;
 
-  case S1ap_ProcedureCode_id_NASNonDeliveryIndication:
-    ret = s1ap_eNB_encode_nas_non_delivery(
-            &s1ap_message_p->msg.s1ap_NASNonDeliveryIndication_IEs, buffer, len);
-    s1ap_xer_print_s1ap_nasnondeliveryindication_(s1ap_xer__print2sp,
-        message_string, s1ap_message_p);
-    message_id = S1AP_NAS_NON_DELIVERY_IND_LOG;
-    break;
-
-  case S1ap_ProcedureCode_id_UEContextReleaseRequest:
-    ret = s1ap_eNB_encode_ue_context_release_request(
-            &s1ap_message_p->msg.s1ap_UEContextReleaseRequestIEs, buffer, len);
-    s1ap_xer_print_s1ap_uecontextreleaserequest(s1ap_xer__print2sp,
-        message_string, s1ap_message_p);
-    message_id = S1AP_UE_CONTEXT_RELEASE_REQ_LOG;
-    break;
+    case S1ap_ProcedureCode_id_UEContextReleaseRequest:
+        ret = s1ap_eNB_encode_ue_context_release_request(
+                  &s1ap_message_p->msg.s1ap_UEContextReleaseRequestIEs, buffer, len);
+        s1ap_xer_print_s1ap_uecontextreleaserequest(s1ap_xer__print2sp,
+                message_string, s1ap_message_p);
+        message_id = S1AP_UE_CONTEXT_RELEASE_REQ_LOG;
+        break;
 
 
-  default:
-    printf("do here error\n");
-    S1AP_DEBUG("Unknown procedure ID (%d) for initiating message\n",
-               (int)s1ap_message_p->procedureCode);
+    default:
+        printf("do here error\n");
+        S1AP_DEBUG("Unknown procedure ID (%d) for initiating message\n",
+                   (int)s1ap_message_p->procedureCode);
+        return ret;
+        break;
+    }
+
+    message_string_size = strlen(message_string);
+
+    message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
+    message_p->ittiMsg.s1ap_s1_setup_log.size = message_string_size;
+    memcpy(&message_p->ittiMsg.s1ap_s1_setup_log.text, message_string, message_string_size);
+
+    itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+
+    free(message_string);
+
     return ret;
-    break;
-  }
-
-  message_string_size = strlen(message_string);
-
-  message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
-  message_p->ittiMsg.s1ap_s1_setup_log.size = message_string_size;
-  memcpy(&message_p->ittiMsg.s1ap_s1_setup_log.text, message_string, message_string_size);
-
-  itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
-
-  free(message_string);
-
-  return ret;
 }
 
 static inline
 int s1ap_eNB_encode_successfull_outcome(s1ap_message *s1ap_message_p,
                                         uint8_t **buffer, uint32_t *len)
 {
-  int ret = -1;
-  MessageDef *message_p;
-  char       *message_string = NULL;
-  size_t      message_string_size;
-  MessagesIds message_id;
+    int ret = -1;
+    MessageDef *message_p;
+    char       *message_string = NULL;
+    size_t      message_string_size;
+    MessagesIds message_id;
 
-  DevAssert(s1ap_message_p != NULL);
+    DevAssert(s1ap_message_p != NULL);
 
-  message_string = calloc(10000, sizeof(char));
+    message_string = calloc(10000, sizeof(char));
 
-  s1ap_string_total_size = 0;
-  message_string_size = strlen(message_string);
+    s1ap_string_total_size = 0;
+    message_string_size = strlen(message_string);
 
 
-  switch(s1ap_message_p->procedureCode) {
-  case S1ap_ProcedureCode_id_InitialContextSetup:
-    ret = s1ap_eNB_encode_initial_context_setup_response(
-            &s1ap_message_p->msg.s1ap_InitialContextSetupResponseIEs, buffer, len);
+    switch(s1ap_message_p->procedureCode)
+    {
+    case S1ap_ProcedureCode_id_InitialContextSetup:
+        ret = s1ap_eNB_encode_initial_context_setup_response(
+                  &s1ap_message_p->msg.s1ap_InitialContextSetupResponseIEs, buffer, len);
 
-    s1ap_xer_print_s1ap_initialcontextsetupresponse(s1ap_xer__print2sp, message_string, s1ap_message_p);
-    message_id = S1AP_INITIAL_CONTEXT_SETUP_LOG;
-    message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
-    message_p->ittiMsg.s1ap_initial_context_setup_log.size = message_string_size;
-    memcpy(&message_p->ittiMsg.s1ap_initial_context_setup_log.text, message_string, message_string_size);
-    itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
-    free(message_string);
-    break;
+        s1ap_xer_print_s1ap_initialcontextsetupresponse(s1ap_xer__print2sp, message_string, s1ap_message_p);
+        message_id = S1AP_INITIAL_CONTEXT_SETUP_LOG;
+        message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
+        message_p->ittiMsg.s1ap_initial_context_setup_log.size = message_string_size;
+        memcpy(&message_p->ittiMsg.s1ap_initial_context_setup_log.text, message_string, message_string_size);
+        itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+        free(message_string);
+        break;
 
-  case S1ap_ProcedureCode_id_UEContextRelease:
-    ret = s1ap_eNB_encode_ue_context_release_complete(
-            &s1ap_message_p->msg.s1ap_UEContextReleaseCompleteIEs, buffer, len);
-    s1ap_xer_print_s1ap_uecontextreleasecomplete(s1ap_xer__print2sp, message_string, s1ap_message_p);
-    message_id = S1AP_UE_CONTEXT_RELEASE_COMPLETE_LOG;
-    message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
-    message_p->ittiMsg.s1ap_ue_context_release_complete_log.size = message_string_size;
-    memcpy(&message_p->ittiMsg.s1ap_ue_context_release_complete_log.text, message_string, message_string_size);
-    itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
-    free(message_string);
-    break;
+    case S1ap_ProcedureCode_id_UEContextRelease:
+        ret = s1ap_eNB_encode_ue_context_release_complete(
+                  &s1ap_message_p->msg.s1ap_UEContextReleaseCompleteIEs, buffer, len);
+        s1ap_xer_print_s1ap_uecontextreleasecomplete(s1ap_xer__print2sp, message_string, s1ap_message_p);
+        message_id = S1AP_UE_CONTEXT_RELEASE_COMPLETE_LOG;
+        message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
+        message_p->ittiMsg.s1ap_ue_context_release_complete_log.size = message_string_size;
+        memcpy(&message_p->ittiMsg.s1ap_ue_context_release_complete_log.text, message_string, message_string_size);
+        itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+        free(message_string);
+        break;
 
-  case S1ap_ProcedureCode_id_E_RABSetup:
+    case S1ap_ProcedureCode_id_E_RABSetup:
 
-    ret = s1ap_eNB_encode_e_rab_setup_response (
-           &s1ap_message_p->msg.s1ap_E_RABSetupResponseIEs, buffer, len);
-    //s1ap_xer_print_s1ap_e_rabsetupresponse (s1ap_xer__print2sp, message_string, s1ap_message_p);
-    message_id =  S1AP_E_RAB_SETUP_RESPONSE_LOG ;
-    message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
-    message_p->ittiMsg.s1ap_e_rab_setup_response_log.size = message_string_size;
-    memcpy(&message_p->ittiMsg.s1ap_e_rab_setup_response_log.text, message_string, message_string_size);
-    itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
-    free(message_string);
-    S1AP_INFO("E_RABSetup successful message\n");
-    break;
+        ret = s1ap_eNB_encode_e_rab_setup_response (
+                  &s1ap_message_p->msg.s1ap_E_RABSetupResponseIEs, buffer, len);
+        //s1ap_xer_print_s1ap_e_rabsetupresponse (s1ap_xer__print2sp, message_string, s1ap_message_p);
+        message_id =  S1AP_E_RAB_SETUP_RESPONSE_LOG ;
+        message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
+        message_p->ittiMsg.s1ap_e_rab_setup_response_log.size = message_string_size;
+        memcpy(&message_p->ittiMsg.s1ap_e_rab_setup_response_log.text, message_string, message_string_size);
+        itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+        free(message_string);
+        S1AP_INFO("E_RABSetup successful message\n");
+        break;
 
-  case S1ap_ProcedureCode_id_HandoverResourceAllocation:
-  	 printf("Ready_HandoverRequestAck successful message\n");
-	 fflush(stdout);
-     ret=s1ap_eNB_encode_enb_send_handover_request_ack(
-	 	&s1ap_message_p->msg.s1ap_HandoverRequestAcknowledgeIEs,buffer,len);
-     s1ap_xer_print_s1ap_handoverrequestacknowledge(s1ap_xer__print2sp, message_string, s1ap_message_p);
-	 free(message_string);
-	 printf("HandoverRequestAck successful message\n");
-	 fflush(stdout);
-	break;
-  default:
-    S1AP_WARN("Unknown procedure ID (%d) for successfull outcome message\n",
-               (int)s1ap_message_p->procedureCode);
+    case S1ap_ProcedureCode_id_HandoverResourceAllocation:
+        printf("Ready_HandoverRequestAck successful message\n");
+        fflush(stdout);
+        ret = s1ap_eNB_encode_enb_send_handover_request_ack(
+                  &s1ap_message_p->msg.s1ap_HandoverRequestAcknowledgeIEs, buffer, len);
+        s1ap_xer_print_s1ap_handoverrequestacknowledge(s1ap_xer__print2sp, message_string, s1ap_message_p);
+        free(message_string);
+        printf("HandoverRequestAck successful message\n");
+        fflush(stdout);
+        break;
+    default:
+        S1AP_WARN("Unknown procedure ID (%d) for successfull outcome message\n",
+                  (int)s1ap_message_p->procedureCode);
+        return ret;
+        break;
+    }
+
+
     return ret;
-    break;
-  }
-
-
-  return ret;
 }
 
 static inline
 int s1ap_eNB_encode_unsuccessfull_outcome(s1ap_message *s1ap_message_p,
-    uint8_t **buffer, uint32_t *len)
+        uint8_t **buffer, uint32_t *len)
 {
-  int ret = -1;
-  MessageDef *message_p;
-  char       *message_string = NULL;
-  size_t      message_string_size;
-  MessagesIds message_id;
+    int ret = -1;
+    MessageDef *message_p;
+    char       *message_string = NULL;
+    size_t      message_string_size;
+    MessagesIds message_id;
 
-  DevAssert(s1ap_message_p != NULL);
+    DevAssert(s1ap_message_p != NULL);
 
-  message_string = calloc(10000, sizeof(char));
+    message_string = calloc(10000, sizeof(char));
 
-  s1ap_string_total_size = 0;
+    s1ap_string_total_size = 0;
 
-  switch(s1ap_message_p->procedureCode) {
-  case S1ap_ProcedureCode_id_InitialContextSetup:
-    //             ret = s1ap_encode_s1ap_initialcontextsetupfailureies(
-    //                 &s1ap_message_p->ittiMsg.s1ap_InitialContextSetupFailureIEs, buffer, len);
-    s1ap_xer_print_s1ap_initialcontextsetupfailure(s1ap_xer__print2sp, message_string, s1ap_message_p);
-    message_id = S1AP_INITIAL_CONTEXT_SETUP_LOG;
-    break;
+    switch(s1ap_message_p->procedureCode)
+    {
+    case S1ap_ProcedureCode_id_InitialContextSetup:
+        //             ret = s1ap_encode_s1ap_initialcontextsetupfailureies(
+        //                 &s1ap_message_p->ittiMsg.s1ap_InitialContextSetupFailureIEs, buffer, len);
+        s1ap_xer_print_s1ap_initialcontextsetupfailure(s1ap_xer__print2sp, message_string, s1ap_message_p);
+        message_id = S1AP_INITIAL_CONTEXT_SETUP_LOG;
+        break;
 
-  default:
-    S1AP_DEBUG("Unknown procedure ID (%d) for unsuccessfull outcome message\n",
-               (int)s1ap_message_p->procedureCode);
+    default:
+        S1AP_DEBUG("Unknown procedure ID (%d) for unsuccessfull outcome message\n",
+                   (int)s1ap_message_p->procedureCode);
+        return ret;
+        break;
+    }
+
+    message_string_size = strlen(message_string);
+
+    message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
+    message_p->ittiMsg.s1ap_initial_context_setup_log.size = message_string_size;
+    memcpy(&message_p->ittiMsg.s1ap_initial_context_setup_log.text, message_string, message_string_size);
+
+    itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
+
+    free(message_string);
+
     return ret;
-    break;
-  }
-
-  message_string_size = strlen(message_string);
-
-  message_p = itti_alloc_new_message_sized(TASK_S1AP, message_id, message_string_size + sizeof (IttiMsgText));
-  message_p->ittiMsg.s1ap_initial_context_setup_log.size = message_string_size;
-  memcpy(&message_p->ittiMsg.s1ap_initial_context_setup_log.text, message_string, message_string_size);
-
-  itti_send_msg_to_task(TASK_UNKNOWN, INSTANCE_DEFAULT, message_p);
-
-  free(message_string);
-
-  return ret;
 }
 
 static inline
 int s1ap_eNB_encode_ue_capability_info_indication(
-  S1ap_UECapabilityInfoIndicationIEs_t *ueCapabilityInfoIndicationIEs,
-  uint8_t                             **buffer,
-  uint32_t                             *length)
+    S1ap_UECapabilityInfoIndicationIEs_t *ueCapabilityInfoIndicationIEs,
+    uint8_t                             **buffer,
+    uint32_t                             *length)
 {
-  S1ap_UECapabilityInfoIndication_t  ueCapabilityInfoIndication;
-  S1ap_UECapabilityInfoIndication_t *ueCapabilityInfoIndication_p =
-    &ueCapabilityInfoIndication;
+    S1ap_UECapabilityInfoIndication_t  ueCapabilityInfoIndication;
+    S1ap_UECapabilityInfoIndication_t *ueCapabilityInfoIndication_p =
+        &ueCapabilityInfoIndication;
 
-  memset((void *)ueCapabilityInfoIndication_p, 0,  sizeof(ueCapabilityInfoIndication));
+    memset((void *)ueCapabilityInfoIndication_p, 0,  sizeof(ueCapabilityInfoIndication));
 
-  if (s1ap_encode_s1ap_uecapabilityinfoindicationies(
-        ueCapabilityInfoIndication_p, ueCapabilityInfoIndicationIEs) < 0) {
-    return -1;
-  }
+    if (s1ap_encode_s1ap_uecapabilityinfoindicationies(
+                ueCapabilityInfoIndication_p, ueCapabilityInfoIndicationIEs) < 0)
+    {
+        return -1;
+    }
 
-  return s1ap_generate_initiating_message(buffer,
-                                          length,
-                                          S1ap_ProcedureCode_id_UECapabilityInfoIndication,
-                                          S1ap_Criticality_ignore,
-                                          &asn_DEF_S1ap_UECapabilityInfoIndication,
-                                          ueCapabilityInfoIndication_p);
+    return s1ap_generate_initiating_message(buffer,
+                                            length,
+                                            S1ap_ProcedureCode_id_UECapabilityInfoIndication,
+                                            S1ap_Criticality_ignore,
+                                            &asn_DEF_S1ap_UECapabilityInfoIndication,
+                                            ueCapabilityInfoIndication_p);
 }
 
 static inline
 int s1ap_eNB_encode_uplink_nas_transport(
-  S1ap_UplinkNASTransportIEs_t *uplinkNASTransportIEs,
-  uint8_t                     **buffer,
-  uint32_t                     *length)
+    S1ap_UplinkNASTransportIEs_t *uplinkNASTransportIEs,
+    uint8_t                     **buffer,
+    uint32_t                     *length)
 {
-  S1ap_UplinkNASTransport_t  uplinkNASTransport;
-  S1ap_UplinkNASTransport_t *uplinkNASTransport_p = &uplinkNASTransport;
+    S1ap_UplinkNASTransport_t  uplinkNASTransport;
+    S1ap_UplinkNASTransport_t *uplinkNASTransport_p = &uplinkNASTransport;
 
-  memset((void *)uplinkNASTransport_p, 0, sizeof(uplinkNASTransport));
+    memset((void *)uplinkNASTransport_p, 0, sizeof(uplinkNASTransport));
 
-  if (s1ap_encode_s1ap_uplinknastransporties(
-        uplinkNASTransport_p, uplinkNASTransportIEs) < 0) {
-    return -1;
-  }
+    if (s1ap_encode_s1ap_uplinknastransporties(
+                uplinkNASTransport_p, uplinkNASTransportIEs) < 0)
+    {
+        return -1;
+    }
 
-  return s1ap_generate_initiating_message(buffer,
-                                          length,
-                                          S1ap_ProcedureCode_id_uplinkNASTransport,
-                                          S1ap_Criticality_ignore,
-                                          &asn_DEF_S1ap_UplinkNASTransport,
-                                          uplinkNASTransport_p);
+    return s1ap_generate_initiating_message(buffer,
+                                            length,
+                                            S1ap_ProcedureCode_id_uplinkNASTransport,
+                                            S1ap_Criticality_ignore,
+                                            &asn_DEF_S1ap_UplinkNASTransport,
+                                            uplinkNASTransport_p);
 }
 
 static inline
 int s1ap_eNB_encode_nas_non_delivery(
-  S1ap_NASNonDeliveryIndication_IEs_t *nasNonDeliveryIndicationIEs,
-  uint8_t                            **buffer,
-  uint32_t                            *length)
+    S1ap_NASNonDeliveryIndication_IEs_t *nasNonDeliveryIndicationIEs,
+    uint8_t                            **buffer,
+    uint32_t                            *length)
 {
-  S1ap_NASNonDeliveryIndication_t  nasNonDeliveryIndication;
-  S1ap_NASNonDeliveryIndication_t *nasNonDeliveryIndication_p = &nasNonDeliveryIndication;
+    S1ap_NASNonDeliveryIndication_t  nasNonDeliveryIndication;
+    S1ap_NASNonDeliveryIndication_t *nasNonDeliveryIndication_p = &nasNonDeliveryIndication;
 
-  memset((void *)nasNonDeliveryIndication_p, 0, sizeof(nasNonDeliveryIndication));
+    memset((void *)nasNonDeliveryIndication_p, 0, sizeof(nasNonDeliveryIndication));
 
-  if (s1ap_encode_s1ap_nasnondeliveryindication_ies(
-        nasNonDeliveryIndication_p, nasNonDeliveryIndicationIEs) < 0) {
-    return -1;
-  }
+    if (s1ap_encode_s1ap_nasnondeliveryindication_ies(
+                nasNonDeliveryIndication_p, nasNonDeliveryIndicationIEs) < 0)
+    {
+        return -1;
+    }
 
-  return s1ap_generate_initiating_message(buffer,
-                                          length,
-                                          S1ap_ProcedureCode_id_NASNonDeliveryIndication,
-                                          S1ap_Criticality_ignore,
-                                          &asn_DEF_S1ap_NASNonDeliveryIndication,
-                                          nasNonDeliveryIndication_p);
+    return s1ap_generate_initiating_message(buffer,
+                                            length,
+                                            S1ap_ProcedureCode_id_NASNonDeliveryIndication,
+                                            S1ap_Criticality_ignore,
+                                            &asn_DEF_S1ap_NASNonDeliveryIndication,
+                                            nasNonDeliveryIndication_p);
 }
 
 static inline
 int s1ap_eNB_encode_s1_setup_request(
-  S1ap_S1SetupRequestIEs_t *s1SetupRequestIEs,
-  uint8_t                 **buffer,
-  uint32_t                 *length)
+    S1ap_S1SetupRequestIEs_t *s1SetupRequestIEs,
+    uint8_t                 **buffer,
+    uint32_t                 *length)
 {
-  S1ap_S1SetupRequest_t  s1SetupRequest;
-  S1ap_S1SetupRequest_t *s1SetupRequest_p = &s1SetupRequest;
+    S1ap_S1SetupRequest_t  s1SetupRequest;
+    S1ap_S1SetupRequest_t *s1SetupRequest_p = &s1SetupRequest;
 
-  memset((void *)s1SetupRequest_p, 0, sizeof(s1SetupRequest));
+    memset((void *)s1SetupRequest_p, 0, sizeof(s1SetupRequest));
 
-  if (s1ap_encode_s1ap_s1setuprequesties(s1SetupRequest_p, s1SetupRequestIEs) < 0) {
-    return -1;
-  }
+    if (s1ap_encode_s1ap_s1setuprequesties(s1SetupRequest_p, s1SetupRequestIEs) < 0)
+    {
+        return -1;
+    }
 
-  return s1ap_generate_initiating_message(buffer,
-                                          length,
-                                          S1ap_ProcedureCode_id_S1Setup,
-                                          S1ap_Criticality_reject,
-                                          &asn_DEF_S1ap_S1SetupRequest,
-                                          s1SetupRequest_p);
+    return s1ap_generate_initiating_message(buffer,
+                                            length,
+                                            S1ap_ProcedureCode_id_S1Setup,
+                                            S1ap_Criticality_reject,
+                                            &asn_DEF_S1ap_S1SetupRequest,
+                                            s1SetupRequest_p);
 }
 
 static inline
 int s1ap_eNB_encode_initial_ue_message(
-  S1ap_InitialUEMessageIEs_t *initialUEmessageIEs_p,
-  uint8_t                   **buffer,
-  uint32_t                   *length)
+    S1ap_InitialUEMessageIEs_t *initialUEmessageIEs_p,
+    uint8_t                   **buffer,
+    uint32_t                   *length)
 {
-  S1ap_InitialUEMessage_t  initialUEMessage;
-  S1ap_InitialUEMessage_t *initialUEMessage_p = &initialUEMessage;
+    S1ap_InitialUEMessage_t  initialUEMessage;
+    S1ap_InitialUEMessage_t *initialUEMessage_p = &initialUEMessage;
 
-  memset((void *)initialUEMessage_p, 0, sizeof(initialUEMessage));
+    memset((void *)initialUEMessage_p, 0, sizeof(initialUEMessage));
 
-  if (s1ap_encode_s1ap_initialuemessageies(
-        initialUEMessage_p, initialUEmessageIEs_p) < 0) {
-    return -1;
-  }
+    if (s1ap_encode_s1ap_initialuemessageies(
+                initialUEMessage_p, initialUEmessageIEs_p) < 0)
+    {
+        return -1;
+    }
 
-  return s1ap_generate_initiating_message(buffer,
-                                          length,
-                                          S1ap_ProcedureCode_id_initialUEMessage,
-                                          S1ap_Criticality_reject,
-                                          &asn_DEF_S1ap_InitialUEMessage,
-                                          initialUEMessage_p);
+    return s1ap_generate_initiating_message(buffer,
+                                            length,
+                                            S1ap_ProcedureCode_id_initialUEMessage,
+                                            S1ap_Criticality_reject,
+                                            &asn_DEF_S1ap_InitialUEMessage,
+                                            initialUEMessage_p);
 }
 
 static inline
 int s1ap_eNB_encode_trace_failure(
-  S1ap_TraceFailureIndicationIEs_t *trace_failure_ies_p,
-  uint8_t                         **buffer,
-  uint32_t                         *length)
+    S1ap_TraceFailureIndicationIEs_t *trace_failure_ies_p,
+    uint8_t                         **buffer,
+    uint32_t                         *length)
 {
-  S1ap_TraceFailureIndication_t  trace_failure;
-  S1ap_TraceFailureIndication_t *trace_failure_p = &trace_failure;
+    S1ap_TraceFailureIndication_t  trace_failure;
+    S1ap_TraceFailureIndication_t *trace_failure_p = &trace_failure;
 
-  memset((void *)trace_failure_p, 0, sizeof(trace_failure));
+    memset((void *)trace_failure_p, 0, sizeof(trace_failure));
 
-  if (s1ap_encode_s1ap_tracefailureindicationies(
-        trace_failure_p, trace_failure_ies_p) < 0) {
-    return -1;
-  }
+    if (s1ap_encode_s1ap_tracefailureindicationies(
+                trace_failure_p, trace_failure_ies_p) < 0)
+    {
+        return -1;
+    }
 
-  return s1ap_generate_initiating_message(buffer,
-                                          length,
-                                          S1ap_ProcedureCode_id_TraceFailureIndication,
-                                          S1ap_Criticality_reject,
-                                          &asn_DEF_S1ap_TraceFailureIndication,
-                                          trace_failure_p);
+    return s1ap_generate_initiating_message(buffer,
+                                            length,
+                                            S1ap_ProcedureCode_id_TraceFailureIndication,
+                                            S1ap_Criticality_reject,
+                                            &asn_DEF_S1ap_TraceFailureIndication,
+                                            trace_failure_p);
 }
 
 static inline
 int s1ap_eNB_encode_initial_context_setup_response(
-  S1ap_InitialContextSetupResponseIEs_t *initialContextSetupResponseIEs,
-  uint8_t                              **buffer,
-  uint32_t                              *length)
+    S1ap_InitialContextSetupResponseIEs_t *initialContextSetupResponseIEs,
+    uint8_t                              **buffer,
+    uint32_t                              *length)
 {
-  S1ap_InitialContextSetupResponse_t  initial_context_setup_response;
-  S1ap_InitialContextSetupResponse_t *initial_context_setup_response_p =
-    &initial_context_setup_response;
+    S1ap_InitialContextSetupResponse_t  initial_context_setup_response;
+    S1ap_InitialContextSetupResponse_t *initial_context_setup_response_p =
+        &initial_context_setup_response;
 
-  memset((void *)initial_context_setup_response_p, 0,
-         sizeof(initial_context_setup_response));
+    memset((void *)initial_context_setup_response_p, 0,
+           sizeof(initial_context_setup_response));
 
-  if (s1ap_encode_s1ap_initialcontextsetupresponseies(
-        initial_context_setup_response_p, initialContextSetupResponseIEs) < 0) {
-    return -1;
-  }
+    if (s1ap_encode_s1ap_initialcontextsetupresponseies(
+                initial_context_setup_response_p, initialContextSetupResponseIEs) < 0)
+    {
+        return -1;
+    }
 
-  return s1ap_generate_successfull_outcome(buffer,
-         length,
-         S1ap_ProcedureCode_id_InitialContextSetup,
-         S1ap_Criticality_reject,
-         &asn_DEF_S1ap_InitialContextSetupResponse,
-         initial_context_setup_response_p);
+    return s1ap_generate_successfull_outcome(buffer,
+            length,
+            S1ap_ProcedureCode_id_InitialContextSetup,
+            S1ap_Criticality_reject,
+            &asn_DEF_S1ap_InitialContextSetupResponse,
+            initial_context_setup_response_p);
 }
 
 static inline
 int s1ap_eNB_encode_ue_context_release_complete(
-  S1ap_UEContextReleaseCompleteIEs_t *s1ap_UEContextReleaseCompleteIEs,
-  uint8_t                              **buffer,
-  uint32_t                              *length)
+    S1ap_UEContextReleaseCompleteIEs_t *s1ap_UEContextReleaseCompleteIEs,
+    uint8_t                              **buffer,
+    uint32_t                              *length)
 {
-  S1ap_UEContextReleaseComplete_t  ue_context_release_complete;
-  S1ap_UEContextReleaseComplete_t *ue_context_release_complete_p =
-    &ue_context_release_complete;
+    S1ap_UEContextReleaseComplete_t  ue_context_release_complete;
+    S1ap_UEContextReleaseComplete_t *ue_context_release_complete_p =
+        &ue_context_release_complete;
 
-  memset((void *)ue_context_release_complete_p, 0,
-         sizeof(ue_context_release_complete));
+    memset((void *)ue_context_release_complete_p, 0,
+           sizeof(ue_context_release_complete));
 
-  if (s1ap_encode_s1ap_uecontextreleasecompleteies(
-        ue_context_release_complete_p, s1ap_UEContextReleaseCompleteIEs) < 0) {
-    return -1;
-  }
+    if (s1ap_encode_s1ap_uecontextreleasecompleteies(
+                ue_context_release_complete_p, s1ap_UEContextReleaseCompleteIEs) < 0)
+    {
+        return -1;
+    }
 
-  return s1ap_generate_successfull_outcome(buffer,
-         length,
-         S1ap_ProcedureCode_id_UEContextRelease,
-         S1ap_Criticality_reject,
-         &asn_DEF_S1ap_UEContextReleaseComplete,
-         ue_context_release_complete_p);
+    return s1ap_generate_successfull_outcome(buffer,
+            length,
+            S1ap_ProcedureCode_id_UEContextRelease,
+            S1ap_Criticality_reject,
+            &asn_DEF_S1ap_UEContextReleaseComplete,
+            ue_context_release_complete_p);
 }
 
 static inline
 int s1ap_eNB_encode_ue_context_release_request(
-  S1ap_UEContextReleaseRequestIEs_t *s1ap_UEContextReleaseRequestIEs,
-  uint8_t                              **buffer,
-  uint32_t                              *length)
+    S1ap_UEContextReleaseRequestIEs_t *s1ap_UEContextReleaseRequestIEs,
+    uint8_t                              **buffer,
+    uint32_t                              *length)
 {
-  S1ap_UEContextReleaseRequest_t  ue_context_release_request;
-  S1ap_UEContextReleaseRequest_t *ue_context_release_request_p =
-    &ue_context_release_request;
+    S1ap_UEContextReleaseRequest_t  ue_context_release_request;
+    S1ap_UEContextReleaseRequest_t *ue_context_release_request_p =
+        &ue_context_release_request;
 
-  memset((void *)ue_context_release_request_p, 0,
-         sizeof(ue_context_release_request));
+    memset((void *)ue_context_release_request_p, 0,
+           sizeof(ue_context_release_request));
 
-  if (s1ap_encode_s1ap_uecontextreleaserequesties(
-        ue_context_release_request_p, s1ap_UEContextReleaseRequestIEs) < 0) {
-    return -1;
-  }
+    if (s1ap_encode_s1ap_uecontextreleaserequesties(
+                ue_context_release_request_p, s1ap_UEContextReleaseRequestIEs) < 0)
+    {
+        return -1;
+    }
 
-  return s1ap_generate_initiating_message(buffer,
-                                          length,
-                                          S1ap_ProcedureCode_id_UEContextReleaseRequest,
-                                          S1ap_Criticality_reject,
-                                          &asn_DEF_S1ap_UEContextReleaseRequest,
-                                          ue_context_release_request_p);
+    return s1ap_generate_initiating_message(buffer,
+                                            length,
+                                            S1ap_ProcedureCode_id_UEContextReleaseRequest,
+                                            S1ap_Criticality_reject,
+                                            &asn_DEF_S1ap_UEContextReleaseRequest,
+                                            ue_context_release_request_p);
 }
 
 static inline
 int s1ap_eNB_encode_e_rab_setup_response(S1ap_E_RABSetupResponseIEs_t  *s1ap_E_RABSetupResponseIEs,
-					 uint8_t                              **buffer,
-					 uint32_t                              *length)
+        uint8_t                              **buffer,
+        uint32_t                              *length)
 {
-  S1ap_E_RABSetupResponse_t  e_rab_setup_response;
-  S1ap_E_RABSetupResponse_t  *e_rab_setup_response_p = &e_rab_setup_response;
-  
-  memset((void *)e_rab_setup_response_p, 0,
-         sizeof(e_rab_setup_response));
+    S1ap_E_RABSetupResponse_t  e_rab_setup_response;
+    S1ap_E_RABSetupResponse_t  *e_rab_setup_response_p = &e_rab_setup_response;
 
-  if (s1ap_encode_s1ap_e_rabsetupresponseies (e_rab_setup_response_p, s1ap_E_RABSetupResponseIEs) < 0) {
-    return -1;
-  }
-  
-  return s1ap_generate_successfull_outcome(buffer,
-         length,
-         S1ap_ProcedureCode_id_E_RABSetup,
-         S1ap_Criticality_reject,
-         &asn_DEF_S1ap_E_RABSetupResponse,
-         e_rab_setup_response_p);
+    memset((void *)e_rab_setup_response_p, 0,
+           sizeof(e_rab_setup_response));
+
+    if (s1ap_encode_s1ap_e_rabsetupresponseies (e_rab_setup_response_p, s1ap_E_RABSetupResponseIEs) < 0)
+    {
+        return -1;
+    }
+
+    return s1ap_generate_successfull_outcome(buffer,
+            length,
+            S1ap_ProcedureCode_id_E_RABSetup,
+            S1ap_Criticality_reject,
+            &asn_DEF_S1ap_E_RABSetupResponse,
+            e_rab_setup_response_p);
 }
 //新添加
 int s1ap_eNB_encode_enb_send_handover_require(S1ap_HandoverRequiredIEs_t  *s1ap_HandoverRequiredIEs,
-					 uint8_t                              **buffer,
-					 uint32_t                              *length)
+        uint8_t                              **buffer,
+        uint32_t                              *length)
 {
-  S1ap_HandoverRequired_t  handover_require;
-  S1ap_HandoverRequired_t  *handover_require_p = &handover_require;
+    S1ap_HandoverRequired_t  handover_require;
+    S1ap_HandoverRequired_t  *handover_require_p = &handover_require;
 
-  memset((void *)handover_require_p, 0,
-         sizeof(handover_require));
+    memset((void *)handover_require_p, 0,
+           sizeof(handover_require));
 
-  if (s1ap_encode_s1ap_handoverrequiredies(handover_require_p, s1ap_HandoverRequiredIEs) < 0) {
-      printf("s1ap_eNB_encode_enb_send_handover_require failed\n");
-      return -1;
-  }
-  printf("s1ap_eNB_encode_enb_send_handover_require success\n");
+    if (s1ap_encode_s1ap_handoverrequiredies(handover_require_p, s1ap_HandoverRequiredIEs) < 0)
+    {
+        printf("s1ap_eNB_encode_enb_send_handover_require failed\n");
+        return -1;
+    }
+    printf("s1ap_eNB_encode_enb_send_handover_require success\n");
 
-  return s1ap_generate_initiating_message(buffer,
-         length,
-         S1ap_ProcedureCode_id_HandoverPreparation,
-         S1ap_Criticality_reject,
-         &asn_DEF_S1ap_HandoverRequired,
-         handover_require_p);
+    return s1ap_generate_initiating_message(buffer,
+                                            length,
+                                            S1ap_ProcedureCode_id_HandoverPreparation,
+                                            S1ap_Criticality_reject,
+                                            &asn_DEF_S1ap_HandoverRequired,
+                                            handover_require_p);
 }
 
 int s1ap_eNB_encode_enb_send_handover_request_ack(S1ap_HandoverRequestAcknowledgeIEs_t *s1ap_HandoverRequestAckIEs,
-					 uint8_t                              **buffer,
-					 uint32_t                              *length)
+        uint8_t                              **buffer,
+        uint32_t                              *length)
 {
-  S1ap_HandoverRequestAcknowledge_t handover_request_ack;
-  S1ap_HandoverRequestAcknowledge_t  *handover_request_ack_p = &handover_request_ack;
+    S1ap_HandoverRequestAcknowledge_t handover_request_ack;
+    S1ap_HandoverRequestAcknowledge_t  *handover_request_ack_p = &handover_request_ack;
 
-  printf("encode_enb_send_handover_request_ack\n");
-  fflush(stdout);
-  memset((void *)handover_request_ack_p, 0,
-         sizeof(handover_request_ack));
-  printf("encode_enb_send_handover_request_ack1\n");
-  fflush(stdout);
+    printf("encode_enb_send_handover_request_ack\n");
+    fflush(stdout);
+    memset((void *)handover_request_ack_p, 0,
+           sizeof(handover_request_ack));
+    printf("encode_enb_send_handover_request_ack1\n");
+    fflush(stdout);
 
-  if (s1ap_encode_s1ap_handoverrequestacknowledgeies(handover_request_ack_p, s1ap_HandoverRequestAckIEs) < 0) {
-      printf("s1ap_eNB_encode_enb_send_handover_request_ack failed\n");
-      return -1;
-  }
-  printf("s1ap_eNB_encode_enb_send_handover_request_ack success\n");
-  fflush(stdout);
-  return s1ap_generate_successfull_outcome(buffer,
-         length,
-         S1ap_ProcedureCode_id_HandoverResourceAllocation,
-         S1ap_Criticality_reject,
-         &asn_DEF_S1ap_HandoverRequestAcknowledge,
-         handover_request_ack_p);
+    if (s1ap_encode_s1ap_handoverrequestacknowledgeies(handover_request_ack_p, s1ap_HandoverRequestAckIEs) < 0)
+    {
+        printf("s1ap_eNB_encode_enb_send_handover_request_ack failed\n");
+        return -1;
+    }
+    printf("s1ap_eNB_encode_enb_send_handover_request_ack success\n");
+    fflush(stdout);
+    return s1ap_generate_successfull_outcome(buffer,
+            length,
+            S1ap_ProcedureCode_id_HandoverResourceAllocation,
+            S1ap_Criticality_reject,
+            &asn_DEF_S1ap_HandoverRequestAcknowledge,
+            handover_request_ack_p);
 }
 
 //wirte by coco
 int s1ap_eNB_encode_enb_send_handover_notify(S1ap_HandoverNotifyIEs_t  *s1ap_HandoverNotifyIEs,
-		uint8_t                              **buffer,
-		uint32_t                              *length)
+        uint8_t                              **buffer,
+        uint32_t                              *length)
 {
-	S1ap_HandoverNotify_t  handover_notify;
-	S1ap_HandoverNotify_t  *handover_notify_p = &handover_notify;
+    S1ap_HandoverNotify_t  handover_notify;
+    S1ap_HandoverNotify_t  *handover_notify_p = &handover_notify;
 
-	memset((void *)handover_notify_p, 0,
-		   sizeof(handover_notify));
-	printf("shall we be here??\n");
-	fflush(stdout);
-	if (s1ap_encode_s1ap_handovernotifyies(handover_notify_p, s1ap_HandoverNotifyIEs) < 0) {
-		printf("s1ap_eNB_encode_enb_send_handover_notify failed\n");
-		fflush(stdout);
-		return -1;
-	}
-	printf("s1ap_eNB_encode_enb_send_handover_notify success\n");
-	printf("by coco");
-	fflush(stdout);
+    memset((void *)handover_notify_p, 0,
+           sizeof(handover_notify));
+    printf("shall we be here??\n");
+    fflush(stdout);
+    if (s1ap_encode_s1ap_handovernotifyies(handover_notify_p, s1ap_HandoverNotifyIEs) < 0)
+    {
+        printf("s1ap_eNB_encode_enb_send_handover_notify failed\n");
+        fflush(stdout);
+        return -1;
+    }
+    printf("s1ap_eNB_encode_enb_send_handover_notify success\n");
+    printf("by coco");
+    fflush(stdout);
 
-	return s1ap_generate_initiating_message(buffer,
-			length,
-			S1ap_ProcedureCode_id_HandoverNotification,
-			S1ap_Criticality_reject,
-			&asn_DEF_S1ap_HandoverNotify,
-			handover_notify_p);
+    return s1ap_generate_initiating_message(buffer,
+                                            length,
+                                            S1ap_ProcedureCode_id_HandoverNotification,
+                                            S1ap_Criticality_reject,
+                                            &asn_DEF_S1ap_HandoverNotify,
+                                            handover_notify_p);
 }
+int s1ap_eNB_encode_path_switch_request(
+    S1ap_PathSwitchRequestIEs_t *s1ap_PathSwitchRequestIEs,
+    uint8_t                              **buffer,
+    uint32_t                              *length)
+{
 
+    S1ap_PathSwitchRequest_t path_switch_request;
+    S1ap_PathSwitchRequest_t *path_switch_request_p = &path_switch_request;
+    memset((void *)path_switch_request_p, 0, sizeof(path_switch_request));
+    if(s1ap_encode_s1ap_pathswitchrequesties(path_switch_request_p, s1ap_PathSwitchRequestIEs) < 0)
+    {
+        return -1;
+    }
+    printf("s1ap_eNB_encode_path_switch_request success\n");
+    fflush(stdout);
+    return s1ap_generate_initiating_message(buffer,
+                                            length,
+                                            S1ap_ProcedureCode_id_PathSwitchRequest,
+                                            S1ap_Criticality_reject,
+                                            &asn_DEF_S1ap_PathSwitchRequest,
+                                            path_switch_request_p);
+}
 
 
 

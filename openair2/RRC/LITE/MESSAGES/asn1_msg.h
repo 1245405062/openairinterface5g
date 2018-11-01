@@ -200,6 +200,7 @@ do_RRCConnectionReconfiguration(
 #if defined(Rel10) || defined(Rel14)
     , SCellToAddMod_r10_t  *SCell_config
 #endif
+    ,struct SecurityConfigHO           *securityConfigHO
                                         );
 
 /**

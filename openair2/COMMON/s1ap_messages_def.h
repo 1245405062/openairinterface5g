@@ -63,7 +63,7 @@ MESSAGE_DEF(S1AP_PAGING_IND                , MESSAGE_PRIORITY_MED, s1ap_paging_i
 MESSAGE_DEF(S1AP_E_RAB_SETUP_REQ            , MESSAGE_PRIORITY_MED, s1ap_e_rab_setup_req_t        , s1ap_e_rab_setup_req )
 MESSAGE_DEF(S1AP_UE_CONTEXT_RELEASE_COMMAND, MESSAGE_PRIORITY_MED, s1ap_ue_release_command_t        , s1ap_ue_release_command)
 //added by magicwo
-MESSAGE_DEF(S1AP_RRCCONNECTION_RECONFIGURATION_HANDOVER, MESSAGE_PRIORITY_MED, s1ap_rrcconnection_reconfiguration_handover_t,s1ap_rrcconnection_reconfiguration_handover)
+MESSAGE_DEF(S1AP_HANDOVER_COMMAND, MESSAGE_PRIORITY_MED, s1ap_handover_command_t,s1ap_handover_command)
 
 
 
@@ -77,3 +77,4 @@ MESSAGE_DEF(S1AP_HANDOVER_REQUEST    , MESSAGE_PRIORITY_MED, s1ap_handover_reque
 MESSAGE_DEF(S1AP_HANDOVER_REQUEST_ACK    , MESSAGE_PRIORITY_MED, s1ap_handover_req_ack_t            , s1ap_handover_req_ack)
 //by coco
 MESSAGE_DEF(S1AP_HANDOVER_NOTIFY     ,MESSAGE_PRIORITY_MED , s1ap_handover_notify_t             , s1ap_handover_notify)
+MESSAGE_DEF(S1AP_PATH_SWITCH_REQUEST ,MESSAGE_PRIORITY_MED , s1ap_path_switch_request_t         , s1ap_path_switch_request)

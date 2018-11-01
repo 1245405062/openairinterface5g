@@ -93,7 +93,10 @@ static
 int s1ap_eNB_handle_handover_command(uint32_t               assoc_id,
                                      uint32_t               stream,
                                      struct s1ap_message_s *s1ap_message_p);
-
+static
+int s1ap_eNB_handle_path_switch_request_ack(uint32_t        assoc_id,
+        uint32_t               stream,
+        struct s1ap_message_s *s1ap_message_p);
 
 
 
@@ -103,7 +106,7 @@ s1ap_message_decoded_callback messages_callback[][3] =
     { 0, s1ap_eNB_handle_handover_command, 0 }, /* HandoverPreparation */
     { s1ap_eNB_handle_handover_request, 0, 0 }, /* HandoverResourceAllocation */
     { 0, 0, 0 }, /* HandoverNotification */
-    { 0, 0, 0 }, /* PathSwitchRequest */
+    { 0, s1ap_eNB_handle_path_switch_request_ack, 0 }, /* PathSwitchRequest */
     { 0, 0, 0 }, /* HandoverCancel */
     { s1ap_eNB_handle_e_rab_setup_request, 0, 0 }, /* E_RABSetup */
     { 0, 0, 0 }, /* E_RABModify */
@@ -1110,55 +1113,89 @@ int s1ap_eNB_handle_handover_request(uint32_t               assoc_id,
     //判断可以执行则为UE分配新的S1AP上下文
     if (receive_handover == 1)
     {
-        //分配上下文，并进行ID分配 TODO
+
         if ((ue_desc_p = s1ap_eNB_allocate_new_UE_context()) == NULL)
         {
             S1AP_ERROR("Cannot allocate new ue context\n");
             return -1;
         }
         DevAssert(ue_desc_p != NULL);
+
+        /* The eNB should allocate a unique eNB UE S1AP ID for this UE. The value
+        * will be used for the duration of the connectivity.
+        */
+        ue_desc_p = s1ap_eNB_allocate_new_UE_context();
+        DevAssert(ue_desc_p != NULL);
+        /* Keep a reference to the selected MME */
+        ue_desc_p->mme_ref       = mme_desc_p;
+        //ue_initial_id在rrc_eNB_S1AP.c中被分配
+        //ue_desc_p->ue_initial_id = s1ap_nas_first_req_p->ue_initial_id;
+        //eNB_instance的值不确定
+        ue_desc_p->eNB_instance  = mme_desc_p->s1ap_eNB_instance;
+        do
+        {
+            struct s1ap_eNB_ue_context_s *collision_p;
+
+            /* Peek a random value for the eNB_ue_s1ap_id */
+            ue_desc_p->eNB_ue_s1ap_id = (random() + random()) & 0x00ffffff;
+            if ((collision_p = RB_INSERT(s1ap_ue_map, &ue_desc_p->eNB_instance->s1ap_ue_head, ue_desc_p))
+                    == NULL)
+            {
+                S1AP_DEBUG("Found usable eNB_ue_s1ap_id: 0x%06x %d(10)\n",
+                           ue_desc_p->eNB_ue_s1ap_id,
+                           ue_desc_p->eNB_ue_s1ap_id);
+                /* Break the loop as the id is not already used by another UE */
+                break;
+            }
+        }
+        while(1);
+        ue_desc_p->mme_ue_s1ap_id = s1ap_HandoverRequest_p->mme_ue_s1ap_id;
+        printf("[HO REQUEST] flag5");
+        fflush(stdout);
         S1ap_E_RABToBeSetupListHOReqIEs_t *e_RABToBeSetupListHOReq = &s1ap_HandoverRequest_p->e_RABToBeSetupListHOReq;
-        S1AP_HANDOVER_REQUEST(message_p).nb_e_rabs_tosetup = s1ap_HandoverRequest_p->e_RABToBeSetupListHOReq.s1ap_E_RABToBeSetupItemHOReq.count;
+        S1AP_HANDOVER_REQUEST(message_p).nb_of_e_rabs = s1ap_HandoverRequest_p->e_RABToBeSetupListHOReq.s1ap_E_RABToBeSetupItemHOReq.count;
         for (int i = 0; i < s1ap_HandoverRequest_p->e_RABToBeSetupListHOReq.s1ap_E_RABToBeSetupItemHOReq.count; i++)
         {
             //获取每个E-RAB
             S1ap_E_RABToBeSetupItemHOReq_t *item_p;
             item_p = (S1ap_E_RABToBeSetupItemHOReq_t *)s1ap_HandoverRequest_p->e_RABToBeSetupListHOReq.s1ap_E_RABToBeSetupItemHOReq.array[i];
 
-            S1AP_HANDOVER_REQUEST(message_p).e_rab_setup_params[i].e_rab_id = item_p->e_RAB_ID;
+            S1AP_HANDOVER_REQUEST(message_p).e_rab_param[i].e_rab_id = item_p->e_RAB_ID;
 
             //HO中没有包含NAS PDU
-            S1AP_HANDOVER_REQUEST(message_p).e_rab_setup_params[i].nas_pdu.length = 0;
-            S1AP_HANDOVER_REQUEST(message_p).e_rab_setup_params[i].nas_pdu.buffer = NULL;
+            S1AP_HANDOVER_REQUEST(message_p).e_rab_param[i].nas_pdu.length = 0;
+            S1AP_HANDOVER_REQUEST(message_p).e_rab_param[i].nas_pdu.buffer = NULL;
 
-            memcpy(S1AP_HANDOVER_REQUEST(message_p).e_rab_setup_params[i].sgw_addr.buffer,
+            memcpy(S1AP_HANDOVER_REQUEST(message_p).e_rab_param[i].sgw_addr.buffer,
                    item_p->transportLayerAddress.buf, item_p->transportLayerAddress.size);
-            S1AP_HANDOVER_REQUEST(message_p).e_rab_setup_params[i].sgw_addr.length =
+            S1AP_HANDOVER_REQUEST(message_p).e_rab_param[i].sgw_addr.length =
                 item_p->transportLayerAddress.size * 8 - item_p->transportLayerAddress.bits_unused;
             /* GTP tunnel endpoint ID */
-            OCTET_STRING_TO_INT32(&item_p->gTP_TEID, S1AP_HANDOVER_REQUEST(message_p).e_rab_setup_params[i].gtp_teid);
+            OCTET_STRING_TO_INT32(&item_p->gTP_TEID, S1AP_HANDOVER_REQUEST(message_p).e_rab_param[i].gtp_teid);
             /* Set the QOS informations */
-            S1AP_HANDOVER_REQUEST(message_p).e_rab_setup_params[i].qos.qci = item_p->e_RABlevelQosParameters.qCI;
-            S1AP_HANDOVER_REQUEST(message_p).e_rab_setup_params[i].qos.allocation_retention_priority.priority_level =
+            S1AP_HANDOVER_REQUEST(message_p).e_rab_param[i].qos.qci = item_p->e_RABlevelQosParameters.qCI;
+            S1AP_HANDOVER_REQUEST(message_p).e_rab_param[i].qos.allocation_retention_priority.priority_level =
                 item_p->e_RABlevelQosParameters.allocationRetentionPriority.priorityLevel;
-            S1AP_HANDOVER_REQUEST(message_p).e_rab_setup_params[i].qos.allocation_retention_priority.pre_emp_capability =
+            S1AP_HANDOVER_REQUEST(message_p).e_rab_param[i].qos.allocation_retention_priority.pre_emp_capability =
                 item_p->e_RABlevelQosParameters.allocationRetentionPriority.pre_emptionCapability;
-            S1AP_HANDOVER_REQUEST(message_p).e_rab_setup_params[i].qos.allocation_retention_priority.pre_emp_vulnerability =
+            S1AP_HANDOVER_REQUEST(message_p).e_rab_param[i].qos.allocation_retention_priority.pre_emp_vulnerability =
                 item_p->e_RABlevelQosParameters.allocationRetentionPriority.pre_emptionVulnerability;
         }
         //解析透传消息
         eci_t eci_t;
         S1AP_HANDOVER_REQUEST(message_p).rrc_container_buf = S1ap_SourceeNB_ToTargeteNB_TransparentContainer_t->rRC_Container.buf;
         S1AP_HANDOVER_REQUEST(message_p).rrc_container_len = S1ap_SourceeNB_ToTargeteNB_TransparentContainer_t->rRC_Container.size;
+        /*
         TBCD_TO_MCC_MNC(&S1ap_SourceeNB_ToTargeteNB_TransparentContainer_t->targetCell_ID.pLMNidentity,
                         S1AP_HANDOVER_REQUEST(message_p).targetMCC,
                         S1AP_HANDOVER_REQUEST(message_p).targetMNC,
                         S1AP_HANDOVER_REQUEST(message_p).target_MNC_Digit_Length);
+        */
         BIT_STRING_TO_CELL_IDENTITY(&S1ap_SourceeNB_ToTargeteNB_TransparentContainer_t->targetCell_ID.cell_ID, eci_t);
-        printf("[HO REQUEST] targetCell_ID:%x,targeteNBID:%x\n", eci_t.cell_id,eci_t.enb_id);
+        printf("[HO REQUEST] targetCell_ID:%x,targeteNBID:%x\n", eci_t.cell_id, eci_t.enb_id);
         fflush(stdout);
         S1AP_HANDOVER_REQUEST(message_p).targetCellId = eci_t.cell_id;
-        S1AP_HANDOVER_REQUEST(message_p).targeteNBID = eci_t.enb_id;
+        //S1AP_HANDOVER_REQUEST(message_p).targeteNBID = eci_t.enb_id;
         printf("[HO REQUEST] flag4\n" );
         fflush(stdout);
     }
@@ -1173,9 +1210,9 @@ int s1ap_eNB_handle_handover_request(uint32_t               assoc_id,
     //ue_desc_p->ue_initial_id = 20;
 
     message_p  = itti_alloc_new_message(TASK_S1AP, S1AP_HANDOVER_REQUEST);
-    S1AP_HANDOVER_REQUEST(message_p).mme_ue_s1ap_id = s1ap_HandoverRequest_p->mme_ue_s1ap_id;
+
     S1AP_HANDOVER_REQUEST(message_p).eNB_ue_s1ap_id = ue_desc_p->eNB_ue_s1ap_id;
-    S1AP_HANDOVER_REQUEST(message_p).ue_initial_id = ue_desc_p->ue_initial_id;
+    //S1AP_HANDOVER_REQUEST(message_p).ue_initial_id = ue_desc_p->ue_initial_id;
 
     S1AP_HANDOVER_REQUEST(message_p).security_capabilities.encryption_algorithms =
         BIT_STRING_to_uint16(&s1ap_HandoverRequest_p->ueSecurityCapabilities.encryptionAlgorithms);
@@ -1188,16 +1225,14 @@ int s1ap_eNB_handle_handover_request(uint32_t               assoc_id,
     memcpy(s1ap_handover_req_p,s1ap_Handover_Request_p->source_ToTarget_TransparentContainer.buf,sizeof(s1ap_handover_req_t));
     printf("s1ap e_rab_id in handover request is %x\n",s1ap_handover_req_p->e_rab_param[0].e_rab_id);
     printf("mme_ue_s1ap_id is %ld\n", s1ap_handover_req_p->mme_ue_s1ap_id);*/
-    printf("hello xkn4\n");
-    fflush(stdout);
+    //printf("hello xkn4\n");
+    //fflush(stdout);
 
-    S1AP_HANDOVER_REQUEST(message_p).source_ToTarget_TransparentContainer.buf = s1ap_HandoverRequest_p->source_ToTarget_TransparentContainer.buf;
+    //S1AP_HANDOVER_REQUEST(message_p).source_ToTarget_TransparentContainer.buf = s1ap_HandoverRequest_p->source_ToTarget_TransparentContainer.buf;
+    //S1AP_HANDOVER_REQUEST(message_p).source_ToTarget_TransparentContainer.size = s1ap_HandoverRequest_p->source_ToTarget_TransparentContainer.size;
 
-
-    S1AP_HANDOVER_REQUEST(message_p).source_ToTarget_TransparentContainer.size = s1ap_HandoverRequest_p->source_ToTarget_TransparentContainer.size;
-
-    printf("TomDing Source2TransparentContainer size:%d\n;", s1ap_HandoverRequest_p->source_ToTarget_TransparentContainer.size);
-    fflush(stdout);
+    //printf("TomDing Source2TransparentContainer size:%d\n;", s1ap_HandoverRequest_p->source_ToTarget_TransparentContainer.size);
+    //fflush(stdout);
     //20180618 by coco
     itti_send_msg_to_task(TASK_RRC_ENB, mme_desc_p->s1ap_eNB_instance->instance, message_p);
     //s1ap_send_handover_request_ack(mme_desc_p->assoc_id, mme_desc_p->nextstream, s1ap_HandoverRequest_p->mme_ue_s1ap_id);
@@ -1229,12 +1264,75 @@ int s1ap_eNB_handle_handover_command(uint32_t               assoc_id,
                    "existing MME context\n", assoc_id);
         return -1;
     }
-    printf("command_mme_ue_s1ap_id is %ld\n", handoverCommand_p->mme_ue_s1ap_id);
-    printf("command_eNB_UE_S1AP_ID is %ld\n", handoverCommand_p->eNB_UE_S1AP_ID);
+    printf("[HO COMMAND] command_mme_ue_s1ap_id is %ld\n", handoverCommand_p->mme_ue_s1ap_id);
+    printf("[HO COMMAND] command_eNB_UE_S1AP_ID is %ld\n", handoverCommand_p->eNB_UE_S1AP_ID);
 
-    s1ap_send_rrc_connection_reconfiguration(handoverCommand_p, mme_desc_p->assoc_id, mme_desc_p->nextstream);
-    printf("hello world2\n");
+    if ((ue_desc_p = s1ap_eNB_get_ue_context(mme_desc_p->s1ap_eNB_instance,
+                     handoverCommand_p->eNB_UE_S1AP_ID)) == NULL)
+    {
+        S1AP_ERROR("[SCTP %d] Received initial context setup request for non "
+                   "existing UE context  TomDing 0x%06lx\n", assoc_id,
+                   handoverCommand_p->eNB_UE_S1AP_ID);
+        return -1;
+    }
+    printf("[HO COMMAND] TomDing ue_desc_p->mme_ue_s1ap_id=%d,ue_initial_id=%d\n", ue_desc_p->mme_ue_s1ap_id, ue_desc_p->ue_initial_id);
+    ue_desc_p->rx_stream = stream;
+    message_p = itti_alloc_new_message(TASK_S1AP, S1AP_HANDOVER_COMMAND);
+
+    S1ap_Target_ToSource_TransparentContainer_t *S1ap_Target_ToSource_TransparentContainer =
+        &handoverCommand_p->target_ToSource_TransparentContainer;
+
+    S1ap_TargeteNB_ToSourceeNB_TransparentContainer_t *S1ap_TargeteNB_ToSourceeNB_TransparentContainer;
+
+    S1ap_TargeteNB_ToSourceeNB_TransparentContainer=malloc(sizeof(S1ap_TargeteNB_ToSourceeNB_TransparentContainer_t));
+
+    memcpy(&S1ap_TargeteNB_ToSourceeNB_TransparentContainer->rRC_Container,S1ap_Target_ToSource_TransparentContainer,sizeof(OCTET_STRING_t));
+    
+    printf("rRC_Container size=%d\n", S1ap_TargeteNB_ToSourceeNB_TransparentContainer->rRC_Container.size);
+    fflush(stdout);
+    /*
+    printf("[HO COMMAND] S1ap_Target_ToSource_TransparentContainer=%d\n", S1ap_Target_ToSource_TransparentContainer->size);
+    fflush(stdout);
+    asn_dec_rval_t  ret = uper_decode(NULL,
+                                      &asn_DEF_S1ap_TargeteNB_ToSourceeNB_TransparentContainer,
+                                      (void **)&S1ap_TargeteNB_ToSourceeNB_TransparentContainer,
+                                      S1ap_Target_ToSource_TransparentContainer->buf,
+                                      S1ap_Target_ToSource_TransparentContainer->size, 0, 0);
+    printf("[HO COMMAND] decode conntainer:%d,consumed:%d\n", ret.code, ret.consumed);
+    fflush(stdout);
+    */
+    S1AP_HANDOVER_COMMAND(message_p).rrc_container_buf = S1ap_TargeteNB_ToSourceeNB_TransparentContainer->rRC_Container.buf;
+    S1AP_HANDOVER_COMMAND(message_p).rrc_container_len = S1ap_TargeteNB_ToSourceeNB_TransparentContainer->rRC_Container.size;
+    S1AP_HANDOVER_COMMAND(message_p).ue_initial_id = ue_desc_p->ue_initial_id;
+    ue_desc_p->ue_initial_id = 0;
+    S1AP_HANDOVER_COMMAND(message_p).eNB_ue_s1ap_id = handoverCommand_p->eNB_UE_S1AP_ID;
+    LOG_I(RRC, "We DO TEST SENDING S1AP_RRCCONNECTION_RECONFIGURATION_HANDOVER\n");
+    fflush(stdout);
+    itti_send_msg_to_task(TASK_RRC_ENB, 0, message_p);
+    return 0;
+}
+//add by coco 2018.10.12
+int s1ap_eNB_handle_path_switch_request_ack(uint32_t               assoc_id,
+        uint32_t               stream,
+        struct s1ap_message_s *s1ap_message_p)
+{
+    s1ap_eNB_mme_data_t   *mme_desc_p       = NULL;
+    s1ap_eNB_ue_context_t *ue_desc_p        = NULL;
+    MessageDef            *message_p        = NULL;
+
+    S1ap_PathSwitchRequestAcknowledgeIEs_t *pathSwitchRequestAck_p;
+
+    DevAssert(s1ap_message_p != NULL);
+    pathSwitchRequestAck_p = &s1ap_message_p->msg.s1ap_PathSwitchRequestAcknowledgeIEs;
+    if ((mme_desc_p = s1ap_eNB_get_MME(NULL, assoc_id, 0)) == NULL)
+    {
+        S1AP_ERROR("[SCTP %d] Received path switch request ack for non "
+                   "existing MME context\n", assoc_id);
+        return -1;
+    }
+    printf("path_switch_request_ack_mme_ue_s1ap_id is %ld\n", pathSwitchRequestAck_p->mme_ue_s1ap_id);
+    printf("path_switch_request_ack_eNB_UE_S1AP_ID is %ld\n", pathSwitchRequestAck_p->eNB_UE_S1AP_ID);
+
 
     return 0;
 }
-

@@ -253,7 +253,7 @@ rrc_eNB_get_ue_context_from_s1ap_ids(
  *\param algorithms The bit mask of available algorithms received from S1AP.
  *\return the selected algorithm.
  */
-static CipheringAlgorithm_r12_t rrc_eNB_select_ciphering(uint16_t algorithms)
+CipheringAlgorithm_r12_t rrc_eNB_select_ciphering(uint16_t algorithms)
 {
 
     //#warning "Forced   return SecurityAlgorithmConfig__cipheringAlgorithm_eea0, to be deleted in future"
@@ -277,7 +277,7 @@ static CipheringAlgorithm_r12_t rrc_eNB_select_ciphering(uint16_t algorithms)
  *\param algorithms The bit mask of available algorithms received from S1AP.
  *\return the selected algorithm.
  */
-static e_SecurityAlgorithmConfig__integrityProtAlgorithm rrc_eNB_select_integrity(uint16_t algorithms)
+e_SecurityAlgorithmConfig__integrityProtAlgorithm rrc_eNB_select_integrity(uint16_t algorithms)
 {
 
     if (algorithms & S1AP_INTEGRITY_EIA2_MASK)
@@ -349,10 +349,17 @@ rrc_eNB_process_security(
 
     return changed;
 }
-void rrc_eNB_S1AP_send_handover_request_ack(const protocol_ctxt_t *const ctxt_pP, uint8_t *container_buf, uint16_t container_size)
+void rrc_eNB_S1AP_send_handover_request_ack(
+    const protocol_ctxt_t *const ctxt_pP,
+    rrc_eNB_ue_context_t *const ue_context_pP,
+    uint8_t *container_buf,
+    uint16_t container_size)
 {
     MessageDef *msg_p;
     msg_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_HANDOVER_REQUEST_ACK);
+    //分配新的ue_initial_id
+    ue_context_pP->ue_context.ue_initial_id = get_next_ue_initial_id (ctxt_pP->module_id);
+    //封装targeteNB_toSourceeNB_TransparentContainer
     HandoverCommand_t handoverCommand;
     handoverCommand.criticalExtensions.present = HandoverCommand__criticalExtensions_PR_c1;
     handoverCommand.criticalExtensions.choice.c1.present = HandoverCommand__criticalExtensions__c1_PR_handoverCommand_r8;
@@ -365,6 +372,8 @@ void rrc_eNB_S1AP_send_handover_request_ack(const protocol_ctxt_t *const ctxt_pP
 
     S1AP_HANDOVER_REQUEST_ACK(msg_p).rrc_container_buf = buf;
     S1AP_HANDOVER_REQUEST_ACK(msg_p).rrc_container_len = (ret.encoded + 7) / 8;
+    S1AP_HANDOVER_REQUEST_ACK(msg_p).ue_initial_id = ue_context_pP->ue_context.ue_initial_id;
+    S1AP_HANDOVER_REQUEST_ACK(msg_p).eNB_ue_s1ap_id = ue_context_pP->ue_context.eNB_ue_s1ap_id;
     itti_send_msg_to_task(TASK_S1AP, ctxt_pP->instance, msg_p);
 
 }
@@ -525,17 +534,6 @@ void rrc_eNB_S1AP_send_handover_require(const protocol_ctxt_t *const ctxt_pP,
 
     printf("TomDing S1AP_HANDOVER_REQUIRE\n");
     LOG_I(RRC, "We DO TEST SENDING....\n");
-    itti_send_msg_to_task(TASK_S1AP, ctxt_pP->instance, msg_p);
-}
-//by coco
-void rrc_eNB_do_send_notify(const protocol_ctxt_t *const ctxt_pP,
-                            rrc_eNB_ue_context_t *const ue_context_pP)
-{
-    MessageDef *msg_p;
-    msg_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_HANDOVER_NOTIFY);
-    // S1AP_HANDOVER_NOTIFY(msg_p).ue_initial_id = 1234;
-    S1AP_HANDOVER_NOTIFY(msg_p).eNB_ue_s1ap_id = ue_context_pP->ue_context.eNB_ue_s1ap_id;
-    LOG_I(RRC, "We DO TEST SENDING HANDOVER NOTIFY....\n");
     itti_send_msg_to_task(TASK_S1AP, ctxt_pP->instance, msg_p);
 }
 
@@ -1420,7 +1418,7 @@ void rrc_eNB_send_S1AP_UE_CONTEXT_RELEASE_REQ (
     }
 }
 //Added by TomDing
-int rrc_eNB_process_S1AP_RRCCONNECTION_RECONFIGURATION_HANDOVER(MessageDef *msg_p, const char *msg_name, instance_t instance, mui_t *rrc_eNB_mui)
+int rrc_eNB_process_S1AP_HANDOVER_COMMAND(MessageDef *msg_p, const char *msg_name, instance_t instance, mui_t *rrc_eNB_mui)
 {
 
     uint16_t                        ue_initial_id;
@@ -1428,34 +1426,56 @@ int rrc_eNB_process_S1AP_RRCCONNECTION_RECONFIGURATION_HANDOVER(MessageDef *msg_
     protocol_ctxt_t              ctxt;
     struct rrc_eNB_ue_context_s *ue_context_p = NULL;
     struct rrc_ue_s1ap_ids_s    *rrc_ue_s1ap_ids = NULL;
-    eNB_ue_s1ap_id = S1AP_RRCCONNECTION_RECONFIGURATION_HANDOVER(msg_p).eNB_ue_s1ap_id;
-    ue_initial_id  = S1AP_RRCCONNECTION_RECONFIGURATION_HANDOVER(msg_p).ue_initial_id;
-    printf("eNB_ue_s1ap_id=%d,ue_initial_id=%d", eNB_ue_s1ap_id, ue_initial_id);
+    eNB_ue_s1ap_id = S1AP_HANDOVER_COMMAND(msg_p).eNB_ue_s1ap_id;
+    ue_initial_id  = S1AP_HANDOVER_COMMAND(msg_p).ue_initial_id;
+    printf("[HO COMMAND] eNB_ue_s1ap_id=%d,ue_initial_id=%d", eNB_ue_s1ap_id, ue_initial_id);
     fflush(stdout);
     ue_context_p   = rrc_eNB_get_ue_context_from_s1ap_ids(instance, ue_initial_id, eNB_ue_s1ap_id);
     if (ue_context_p == NULL)
     {
-        printf("UE_CONTEXT_P is NULL TomDing\n");
+        printf("[HO COMMAND] UE_CONTEXT_P is NULL TomDing\n");
         fflush(stdout);
     }
     else
     {
-        printf("TomDing ue_context_p is not NULL\n");
+        printf("[HO COMMAND] TomDing ue_context_p is not NULL\n");
         fflush(stdout);
         PROTOCOL_CTXT_SET_BY_INSTANCE(&ctxt, instance, ENB_FLAG_YES, ue_context_p->ue_context.rnti, 0, 0);
-        printf("TomDing PROTOCO_CTXT is NOT NULL\n");
-        printf("TomDing [eNB %d] Frame %d: handover Command received for new UE_id  %x current eNB %d target eNB: %d \n",
+        printf("[HO COMMAND] TomDing PROTOCO_CTXT is NOT NULL\n");
+        printf("[HO COMMAND] TomDing [eNB %d] Frame %d: handover Command received for new UE_id  %x current eNB %d target eNB: %d \n",
                ctxt.module_id,
                ctxt.frame,
                ctxt.rnti,
                ctxt.module_id,
                ue_context_p->ue_context.handover_info->modid_t);
         fflush(stdout);
+        /*
+        HandoverCommand_t *handoverCommand;
+        asn_dec_rval_t  ret = uper_decode(NULL,
+                                          &asn_DEF_HandoverCommand,
+                                          (void **)&handoverCommand,
+                                          S1AP_HANDOVER_COMMAND(msg_p).rrc_container_buf,
+                                          S1AP_HANDOVER_COMMAND(msg_p).rrc_container_len, 0, 0);
+        printf("[HO COMMAND] decode conntainer:%d,consumed:%d\n", ret.code, ret.consumed);
+        uint8_t *buf = handoverCommand->criticalExtensions.choice.c1.choice.handoverCommand_r8.handoverCommandMessage.buf;
+        uint8_t size = handoverCommand->criticalExtensions.choice.c1.choice.handoverCommand_r8.handoverCommandMessage.size;
+        */
         rrc_eNB_process_handoverPreparationInformation(&ctxt, ue_context_p);
-        printf("TomDing handover_info->size=%d,handover_info->buf=%s", ue_context_p->ue_context.handover_info->size, ue_context_p->ue_context.handover_info->buf);
-        printf("ctxt->eNB_index=%d,ctxt->instace=%s,ctxt->configured=%d\n", ctxt.eNB_index, ctxt.instance, ctxt.configured);
-        printf("TomDing handover_info->size:%d,handover_info->buf:%s\n", ue_context_p->ue_context.handover_info->size, ue_context_p->ue_context.handover_info->buf);
+        printf("[HO COMMAND] TomDing handover_info->size=%d,handover_info->buf=%s", ue_context_p->ue_context.handover_info->size, ue_context_p->ue_context.handover_info->buf);
+        printf("[HO COMMAND] ctxt->eNB_index=%d,ctxt->instace=%s,ctxt->configured=%d\n", ctxt.eNB_index, ctxt.instance, ctxt.configured);
+        printf("[HO COMMAND] TomDing handover_info->size:%d,handover_info->buf:%s\n", ue_context_p->ue_context.handover_info->size, ue_context_p->ue_context.handover_info->buf);
         fflush(stdout);
+        /*
+        rrc_data_req(
+            &ctxt,
+            DCCH,
+            0,
+            SDU_CONFIRM_NO,
+            size,
+            buf,
+            PDCP_TRANSMISSION_MODE_CONTROL);
+
+        */
     }
     return 0;
 }
@@ -1774,6 +1794,38 @@ int rrc_eNB_send_S1AP_E_RAB_SETUP_RESP(const protocol_ctxt_t *const ctxt_pP,
     }
 
     return 0;
+}
+//by coco
+void rrc_eNB_S1AP_send_handover_notify(const protocol_ctxt_t *const ctxt_pP,
+                                       rrc_eNB_ue_context_t *const ue_context_pP)
+{
+    MessageDef *msg_p;
+    msg_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_HANDOVER_NOTIFY);
+    // S1AP_HANDOVER_NOTIFY(msg_p).ue_initial_id = 1234;
+    S1AP_HANDOVER_NOTIFY(msg_p).eNB_ue_s1ap_id = ue_context_pP->ue_context.eNB_ue_s1ap_id;
+    LOG_I(RRC, "We DO TEST SENDING HANDOVER NOTIFY....\n");
+    printf("stp2 by coco\n");
+    itti_send_msg_to_task(TASK_S1AP, ctxt_pP->instance, msg_p);
+}
+//by coco 2018.7.16
+void rrc_eNB_S1AP_send_path_switch_request(const protocol_ctxt_t *const ctxt_pP,
+        rrc_eNB_ue_context_t *const ue_context_pP)
+{
+    MessageDef *msg_p;
+    msg_p = itti_alloc_new_message(TASK_RRC_ENB, S1AP_PATH_SWITCH_REQUEST);
+    S1AP_PATH_SWITCH_REQUEST(msg_p).eNB_ue_s1ap_id = ue_context_pP->ue_context.eNB_ue_s1ap_id;
+    printf("the setup_e_rabs is %d,the nb_of_e_rabs is %d\n", ue_context_pP->ue_context.setup_e_rabs, ue_context_pP->ue_context.nb_of_e_rabs);
+    fflush(stdout);
+    S1AP_PATH_SWITCH_REQUEST(msg_p).setup_e_rabs = ue_context_pP->ue_context.setup_e_rabs;
+    S1AP_PATH_SWITCH_REQUEST(msg_p).nb_of_e_rabs = ue_context_pP->ue_context.nb_of_e_rabs;
+    int i = 0;
+    for (i = 0; i < ue_context_pP->ue_context.nb_of_e_rabs; i++)
+        S1AP_PATH_SWITCH_REQUEST(msg_p).e_rab_param[i] = ue_context_pP->ue_context.e_rab[i].param;
+    S1AP_PATH_SWITCH_REQUEST(msg_p).security_capabilities = ue_context_pP->ue_context.security_capabilities;
+    LOG_I(RRC, "Sending pathswitch request....\n");
+    printf("pathswitch request from RRC by coco\n");
+    fflush(stdout);
+    itti_send_msg_to_task(TASK_S1AP, ctxt_pP->instance, msg_p);
 }
 # endif /* defined(ENABLE_ITTI) */
 #endif /* defined(ENABLE_USE_MME) */

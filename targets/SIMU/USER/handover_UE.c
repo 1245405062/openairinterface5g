@@ -83,6 +83,8 @@ void *handover_ue_task(void *args_p)
     handover_ue_config_t.msg_recv.msg_namelen = sizeof(struct sockaddr_nl);
     handover_ue_config_t.msg_recv.msg_iov = &handover_ue_config_t.iov_recv;
     handover_ue_config_t.msg_recv.msg_iovlen = 1;
+    printf("[HANDOVER] handover_UE Init Success\n");
+    fflush(stdout);
     while (1)
     {
         //从内核接收

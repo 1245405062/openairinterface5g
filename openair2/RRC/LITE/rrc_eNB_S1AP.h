@@ -49,7 +49,8 @@ typedef struct rrc_ue_s1ap_ids_s {
   // value
   rnti_t   ue_rnti;
 } rrc_ue_s1ap_ids_t;
-
+CipheringAlgorithm_r12_t rrc_eNB_select_ciphering(uint16_t algorithms);
+e_SecurityAlgorithmConfig__integrityProtAlgorithm rrc_eNB_select_integrity(uint16_t algorithms);
 int
 rrc_eNB_S1AP_compare_ue_ids(
   struct rrc_ue_s1ap_ids_s* c1_pP,

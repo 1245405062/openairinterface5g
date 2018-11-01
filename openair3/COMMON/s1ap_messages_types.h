@@ -28,7 +28,7 @@
 #define S1AP_UE_CONTEXT_RELEASE_COMMAND(mSGpTR) (mSGpTR)->ittiMsg.s1ap_ue_context_release_command
 #define S1AP_UE_CONTEXT_RELEASE_COMPLETE(mSGpTR) (mSGpTR)->ittiMsg.s1ap_ue_context_release_complete
 
-#define S1AP_RRCCONNECTION_RECONFIGURATION_HANDOVER(mSGpTR) (mSGpTR)->ittiMsg.s1ap_rrcconnection_reconfiguration_handover
+#define S1AP_HANDOVER_COMMAND(mSGpTR) (mSGpTR)->ittiMsg.s1ap_handover_command
 
 //新添
 #define S1AP_HANDOVER_REQUIRE(mSGpTR) (mSGpTR)->ittiMsg.s1ap_handover_req

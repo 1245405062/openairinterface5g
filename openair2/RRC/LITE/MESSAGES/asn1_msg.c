@@ -2041,6 +2041,7 @@ do_RRCConnectionReconfiguration(
 #if defined(Rel10) || defined(Rel14)
     , SCellToAddMod_r10_t  *SCell_config
 #endif
+    ,struct SecurityConfigHO           *securityConfigHO
 )
 //------------------------------------------------------------------------------
 {
@@ -2148,7 +2149,7 @@ do_RRCConnectionReconfiguration(
     }
 
     rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.dedicatedInfoNASList = dedicatedInfoNASList;
-    rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.securityConfigHO     = NULL;
+    rrcConnectionReconfiguration->criticalExtensions.choice.c1.choice.rrcConnectionReconfiguration_r8.securityConfigHO     = securityConfigHO;
     fflush(stdout);
     enc_rval = uper_encode_to_buffer(&asn_DEF_DL_DCCH_Message,
                                      (void *)&dl_dcch_msg,
